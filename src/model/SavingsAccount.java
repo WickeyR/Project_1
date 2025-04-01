@@ -1,9 +1,9 @@
-
+package model;
 //Author: Ricky Franco
 //25 Mar 2025
-//SavingsAccount.java:
+//model.SavingsAccount.java:
 
-public class SavingsAccount extends Account{
+public class SavingsAccount extends Account {
 
     private double interestRate;
 

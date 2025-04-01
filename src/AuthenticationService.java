@@ -1,3 +1,5 @@
+import model.User;
+
 //Author: Ricky Franco
 //01 April 2025
 //AuthenticationService.java: Connects with SQL database to confirm user information
@@ -37,10 +39,17 @@ public class AuthenticationService {
     }
 
 
-
-
-
-
+    /**
+     * @param firstName users first name
+     * @param lastName users last name
+     * @param DOB users date of birth
+     * @param email users email
+     * @param phoneNumber users phone number
+     * @param address users address
+     * @param username username
+     * @param password password
+     * @return return the user
+     */
     public User registerUser(String firstName, String lastName, int DOB, String email,
                              int phoneNumber, String address, String username, String password) {
 

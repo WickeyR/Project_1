@@ -1,6 +1,6 @@
-//Author: Ricky Franco
+package model;//Author: Ricky Franco
 //25 Mar 2025
-//Transaction.java:
+//model.Transaction.java:
 
 import java.sql.Time;
 

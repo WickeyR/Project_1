@@ -9,27 +9,27 @@
 This project aims to develop a **secure and efficient banking application** using **Object-Oriented Programming (OOP)** principles. The system will allow users to **manage bank accounts, perform transactions, and generate reports** while ensuring data integrity, security, and scalability.
 
 ### Key Functionalities:
-- **User Management:** Secure authentication system with role-based access control (customers and bank staff).
-- **Account Handling:** Creation, updating, and deletion of different account types.
-- **Transaction Processing:** Real-time fund transfers, deposits, and withdrawals with validation.
-- **Reporting & Analytics:** Transaction history, balance inquiries, and statement generation.
+- **model.User Management:** Secure authentication system with role-based access control (customers and bank staff).
+- **model.Account Handling:** Creation, updating, and deletion of different account types.
+- **model.Transaction Processing:** Real-time fund transfers, deposits, and withdrawals with validation.
+- **Reporting & Analytics:** model.Transaction history, balance inquiries, and statement generation.
 
 ---
 
 ## 2. Key Features
 
-### 1. User Authentication
+### 1. model.User Authentication
 - Secure login system using **password hashing (e.g., bcrypt, SHA-256)**.
 - **Role-based access control**: Different functionalities for customers and bank employees.
 - **Session management**: Automatic logout after inactivity for security.
 
 ### 2. Core Functionalities
-- **Account Management**
+- **model.Account Management**
   - Customers can create, update, or delete **Checking or Savings accounts**.
   - Bank staff can view and manage customer accounts.
-- **Transaction Processing**
+- **model.Transaction Processing**
   - **Deposits, withdrawals, and fund transfers** with real-time updates.
-  - **Transaction logs** to track and validate account activities.
+  - **model.Transaction logs** to track and validate account activities.
   - **Overdraft protection** for specific account types.
 - **Reporting & Analysis**
   - Customers can generate **account statements** and view transaction histories.
@@ -53,16 +53,16 @@ This project aims to develop a **secure and efficient banking application** usin
 ### 2. Inheritance
 - **Base Class:** `BankAccount` (common attributes and methods).
 - **Derived Classes:**
-  - `SavingsAccount` (interest rate applied).
+  - `model.SavingsAccount` (interest rate applied).
   - `CheckingAccount` (overdraft protection enabled).
 
 ### 3. Polymorphism
-- **Transaction methods** behave differently based on account type.
-- **Overriding example:** `calculateInterest()` behaves differently in `SavingsAccount` than in `CheckingAccount`.
+- **model.Transaction methods** behave differently based on account type.
+- **Overriding example:** `calculateInterest()` behaves differently in `model.SavingsAccount` than in `CheckingAccount`.
 
 ### 4. Abstraction
 - **Interface `TransactionInterface`** defines `deposit()`, `withdraw()`, and `transfer()`.
-- Concrete classes (`CheckingAccount`, `SavingsAccount`) implement these methods.
+- Concrete classes (`CheckingAccount`, `model.SavingsAccount`) implement these methods.
 
 ---
 

@@ -1,6 +1,6 @@
-//Author: Ricky Franco
+package model;//Author: Ricky Franco
 //25 Mar 2025
-//User.java:
+//model.User.java:
 
 import java.util.Objects;
 
@@ -36,7 +36,7 @@ public class User {
                 String address, String username, String passwordHash) {
 
         //Initialize user information
-        this.USER_ID = userid;
+
         this.FIRST_NAME = firstName;
         this.LAST_NAME = lastName;
         this.DATE_OF_BIRTH = DOB;

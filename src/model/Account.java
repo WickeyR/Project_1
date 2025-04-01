@@ -1,6 +1,6 @@
-//Author: Ricky Franco
+package model;//Author: Ricky Franco
 //25 Mar 2025
-//Account.java:
+//model.Account.java:
 
 public abstract class Account {
 
@@ -42,7 +42,7 @@ public abstract class Account {
     //------------------ GETTER METHODS --------------//
 
     /**
-     * @return Account number
+     * @return model.Account number
      */
     public int getACCOUNT_NUMBER() {
         return ACCOUNT_NUMBER;
