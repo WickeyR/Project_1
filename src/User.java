@@ -23,17 +23,16 @@ public class User {
 
 
     /**
-     * @param userid Unique ID tied to the users accounts
-     * @param firstName first name of the user
-     * @param lastName last name of the user
-     * @param DOB users date of birth
-     * @param email users email
-     * @param phoneNumber users phone number
-     * @param address users address
-     * @param username users username to login
+     * @param firstName    first name of the user
+     * @param lastName     last name of the user
+     * @param DOB          users date of birth
+     * @param email        users email
+     * @param phoneNumber  users phone number
+     * @param address      users address
+     * @param username     users username to login
      * @param passwordHash users password to login
      */
-    public User(int userid, String firstName, String lastName, int DOB, String email, int phoneNumber,
+    public User(String firstName, String lastName, int DOB, String email, int phoneNumber,
                 String address, String username, String passwordHash) {
 
         //Initialize user information
