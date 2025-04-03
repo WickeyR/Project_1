@@ -7,7 +7,7 @@ import java.util.Objects;
 public class User {
 
 
-    final int USER_ID;
+//    final int USER_ID;
     final String FIRST_NAME;
     final String LAST_NAME;
 
