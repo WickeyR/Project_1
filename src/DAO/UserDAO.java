@@ -14,7 +14,7 @@ public class UserDAO {
     public void createUser(User user, Connection connection){
 
     }
-
+    .
     /**
      * @param username The username to grab the user from
      * @param connection The sql connection

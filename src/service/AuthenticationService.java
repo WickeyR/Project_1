@@ -1,8 +1,10 @@
+package service;
+
 import model.User;
 
 //Author: Ricky Franco
 //01 April 2025
-//AuthenticationService.java: Connects with SQL database to confirm user information
+//service.AuthenticationService.java: Connects with SQL database to confirm user information
 public class AuthenticationService {
 
 
