@@ -103,9 +103,7 @@ public class AuthenticationService {
         catch (SQLException e) {
             e.printStackTrace();
             return null;
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
 
