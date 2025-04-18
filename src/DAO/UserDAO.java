@@ -41,5 +41,14 @@ public class UserDAO {
      */
     public boolean doesUsernameExist(String username, Connection connection){
 
-        return false;}
+        return false;
+
+    }
+
+
+    public boolean doesEmailExist(String email, Connection connection){
+
+
+        return false;
+    }
 }
