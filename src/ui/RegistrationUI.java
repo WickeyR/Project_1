@@ -4,6 +4,8 @@ import model.User;
 
 import java.time.LocalDate;
 import java.util.Scanner;
+
+import service.AuthenticationService;
 public class RegistrationUI {
 
     public static void main(String[] args) {
@@ -28,7 +30,8 @@ public class RegistrationUI {
 
         // Prompt for phone number (as text to accommodate any formatting)
         System.out.print("Phone Number: ");
-        String phoneNumber = scanner.nextLine();
+        int phoneNumber = scanner.nextInt();
+        scanner.nextLine();
 
         // Prompt for address
         System.out.print("Address: ");
@@ -43,21 +46,15 @@ public class RegistrationUI {
         String password = scanner.nextLine();
 
         // Prompt for date of birth (the format should match your parsing logic)
-        System.out.print("Date of Birth (yyyy-MM-dd): ");
-        String dobInput = scanner.nextLine();
-        LocalDate dateOfBirth = null;
-        try {
-            dateOfBirth = LocalDate.parse(dobInput);
-        } catch (Exception e) {
-            System.out.println("Invalid date format. Please enter the date as yyyy-MM-dd.");
-            System.exit(0);
-        }
+        System.out.print("Date of Birth (yyyyMMdd): ");
+        int dobInput = scanner.nextInt();
+
 
         // Create an instance of your service.AuthenticationService
         AuthenticationService authService = new AuthenticationService();
 
         // Call the registration method (adjust the method signature as needed)
-        User newUser = authService.registerUser(firstName, lastName, dateOfBirth, email,
+        User newUser = authService.registerUser(firstName, lastName, dobInput, email,
                 phoneNumber, address, username, password);
 
         if (newUser != null) {
@@ -67,5 +64,5 @@ public class RegistrationUI {
         }
 
         scanner.close();
-    }}
+    }
 }
