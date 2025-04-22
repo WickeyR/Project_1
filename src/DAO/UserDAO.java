@@ -1,6 +1,7 @@
 package DAO;
 
 import model.User;
+import util.DatabaseConnection;
 
 import java.sql.*;
 
@@ -41,10 +42,40 @@ public class UserDAO {
 
     /**
      * @param username The username to grab the user from
-     * @param connection The sql connection
      * @return the user associated with the username
      */
-    public User getUserByUsername(String username, Connection connection){
+    public static User getUserByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM users WHERE username = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)){
+                statement.setString(1, username);
+                try(ResultSet rs = statement.executeQuery()){
+                    if(rs.next()){
+                        // Convert DOB to yyyymmdd format
+                        String dobStr = rs.getString("date_of_birth");
+                        int dobInt = Integer.parseInt(dobStr.replace("-", ""));
+
+                        //Convert phone number to int
+                        int phone = Integer.parseInt(rs.getString("phone_number"));
+
+
+                        //Construc the new user and return it
+                        return new User(
+                                rs.getString("first_name"),
+                                rs.getString("last_name"),
+                                dobInt,
+                                rs.getString("email"),
+                                phone,
+                                rs.getString("address"),
+                                rs.getString("username"),
+                                rs.getString("password_hash")
+                        );
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
 
         return null;

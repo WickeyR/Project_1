@@ -6,6 +6,8 @@ import util.DatabaseConnection;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -19,25 +21,6 @@ import java.sql.SQLException;
 public class AuthenticationService {
 
 
-    /**
-     * @param email users email
-     * @param password users password
-     * @return true or false based on login success
-     */
-    public boolean Login(String email, String password){
-        //Attempt to connect to log in to account through sql
-        if(true){
-
-
-
-            //Pass true which connects the user to their dashboard
-            return true;
-        }
-
-
-        //Case if password does not exist
-        return false;
-    }
 
 
     /**
@@ -83,7 +66,7 @@ public class AuthenticationService {
             }
 
             //user does not exist, hash password and create user
-            String hashedPassword = hashPassword(password);
+            String hashedPassword = encryptPassword(password);
 
 
             //Create new user object
@@ -103,29 +86,21 @@ public class AuthenticationService {
         catch (SQLException e) {
             e.printStackTrace();
             return null;
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
 
     }
-    public static String hashPassword(String password) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
+    public static String encryptPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
 
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 256);
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        byte[] hashedPassword = factory.generateSecret(spec).getEncoded();
-
-        // Convert byte array to a hexadecimal string
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashedPassword) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1)
-                hexString.append('0');
-            hexString.append(hex);
+        // Convert the byte array to a hexadecimal string
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashedBytes) {
+            sb.append(String.format("%02x", b));
         }
-        return hexString.toString();
+        return sb.toString();
     }
 
 
@@ -134,12 +109,12 @@ public class AuthenticationService {
      * @param password the password of the user
      * @return true or false based on if password is correct
      */
-    public boolean login(String username, String password){
+    public static boolean login(String username, String password){
         try(Connection conn = DatabaseConnection.getConnection()){
             UserDAO userDAO = new UserDAO();
 
             //Grab the users username
-            User user = userDAO.getUserByUsername(username, conn);
+            User user = userDAO.getUserByUsername(username);
             if(user == null){
                 System.out.println("User not found");
                 return false;
@@ -147,7 +122,7 @@ public class AuthenticationService {
 
             //check if the password equals the hashed password of the user stored in the database
             // if the password is correct return true
-            if(user.getPasswordHash().equals(password)){
+            if(user.getPasswordHash().equals(encryptPassword(password))){
                 return true;
             }else{
                 System.out.println("Wrong password");
@@ -156,6 +131,8 @@ public class AuthenticationService {
         }catch (SQLException e){
             e.printStackTrace();
             return false;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
