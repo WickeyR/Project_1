@@ -2,10 +2,7 @@ package DAO;
 
 import model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class UserDAO {
 
@@ -14,8 +11,32 @@ public class UserDAO {
      * @param user The user to add to the database
      * @param connection The connection to the SQL database
      */
-    public void createUser(User user, Connection connection){
+    public void createUser(User user, Connection connection)  {
 
+        // SQL statement to insert user into the database
+        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, address, username, password_hash, date_of_birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try(PreparedStatement statement = connection.prepareStatement(sql)){
+            // set string statements for user information into SQl database
+            statement.setString(1, user.getFirstName());
+            statement.setString(2, user.getLastName());
+            statement.setString(3, user.getEmail());
+            statement.setString(4, Integer.toString(user.getPhoneNumber()));
+            statement.setString(5, user.getAddress());
+            statement.setString(6, user.getUsername());
+            statement.setString(7, user.getPasswordHash());
+
+
+            String s = Integer.toString(user.getDATE_OF_BIRTH());
+            String formattedDob = s.substring(0, 4) + "-" + s.substring(4, 6) + "-" + s.substring(6, 8);
+            Date dob = Date.valueOf(formattedDob);
+            statement.setDate(8, dob);
+
+            // Execute insertion into SQL database
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

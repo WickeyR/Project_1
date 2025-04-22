@@ -8,10 +8,10 @@ public class User {
 
 
 //    final int USER_ID;
-    final String FIRST_NAME;
-    final String LAST_NAME;
+     final String FIRST_NAME;
+     final String LAST_NAME;
 
-    final int DATE_OF_BIRTH;
+    public final int DATE_OF_BIRTH;
     private String email;
 
     private int phoneNumber;
@@ -43,12 +43,8 @@ public class User {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        if (DoesUsernameExist(username)) {
-            this.username = username;
-        }else{
-            //Prompt the user for the username again
-        }
-        this.passwordHash = HashPassword(passwordHash);
+        this.username = username;
+        this.passwordHash = passwordHash;
     }
 
 
@@ -186,6 +182,7 @@ public class User {
      * getUsername: Getter method to return users' address
      */
     public String getUsername() {
+
         return username;
     }
 
@@ -197,6 +194,14 @@ public class User {
         return passwordHash;
     }
 
+
+    public String getFirstName() {
+        return FIRST_NAME;
+    }
+
+    public String getLastName() {
+        return LAST_NAME;
+    }
 
 
 
@@ -223,6 +228,10 @@ public class User {
      */
     private static String HashPassword(String passwordHash){
         return "";
+    }
+
+    public int getDATE_OF_BIRTH() {
+        return DATE_OF_BIRTH;
     }
 }
 

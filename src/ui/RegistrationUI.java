@@ -2,13 +2,34 @@ package ui;
 
 import model.User;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Scanner;
 
 import service.AuthenticationService;
+import util.DatabaseConnection;
+
 public class RegistrationUI {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
+
+
+        try {
+            System.out.println("Attempting to connect to database...");
+            //Test connection before
+            Connection Connection = DatabaseConnection.getConnection();
+            if (Connection != null) {
+                System.out.println("Connection Established");
+            }else{
+                //If connection failed, quit program
+                System.out.println("Connection Failed");
+                System.exit(0);
+            }
+            //Catch SQL connection
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("**********************************");
