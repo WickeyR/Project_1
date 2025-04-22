@@ -128,6 +128,37 @@ public class AuthenticationService {
         return hexString.toString();
     }
 
+
+    /**
+     * @param username the username of the user
+     * @param password the password of the user
+     * @return true or false based on if password is correct
+     */
+    public boolean login(String username, String password){
+        try(Connection conn = DatabaseConnection.getConnection()){
+            UserDAO userDAO = new UserDAO();
+
+            //Grab the users username
+            User user = userDAO.getUserByUsername(username, conn);
+            if(user == null){
+                System.out.println("User not found");
+                return false;
+            }
+
+            //check if the password equals the hashed password of the user stored in the database
+            // if the password is correct return true
+            if(user.getPasswordHash().equals(password)){
+                return true;
+            }else{
+                System.out.println("Wrong password");
+                return false;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
 
 
