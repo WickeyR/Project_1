@@ -15,7 +15,7 @@ import util.DatabaseConnection;
 
 public class RegistrationUI {
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws SQLException {
 
 
         try {
@@ -39,7 +39,7 @@ public class RegistrationUI {
     }
 
 
-    public static void MainMenu()  {
+    public static void MainMenu() throws SQLException {
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("**********************************");
@@ -101,7 +101,7 @@ public class RegistrationUI {
 
 
     }
-    public static void createUser(){
+    public static void createUser() throws SQLException {
 
         System.out.println("**********************************");
         System.out.println("Welcome to the Bank Registration Portal");
@@ -118,18 +118,18 @@ public class RegistrationUI {
         System.out.print("Last Name: ");
         String lastName = scanner.nextLine();
 
-        // Prompt for email
-        System.out.print("Email: ");
-        String email = scanner.nextLine();
-
-        // Prompt for phone number (as text to accommodate any formatting)
-        System.out.print("Phone Number: ");
-        int phoneNumber = scanner.nextInt();
-        scanner.nextLine();
-
-        // Prompt for address
-        System.out.print("Address: ");
-        String address = scanner.nextLine();
+//        // Prompt for email
+//        System.out.print("Email: ");
+//        String email = scanner.nextLine();
+//
+//        // Prompt for phone number (as text to accommodate any formatting)
+//        System.out.print("Phone Number: ");
+//        int phoneNumber = scanner.nextInt();
+//        scanner.nextLine();
+//
+//        // Prompt for address
+//        System.out.print("Address: ");
+//        String address = scanner.nextLine();
 
         // Prompt for username
         System.out.print("Username: ");
@@ -138,18 +138,17 @@ public class RegistrationUI {
         // Prompt for password
         System.out.print("Password: ");
         String password = scanner.nextLine();
-
-        // Prompt for date of birth (the format should match your parsing logic)
-        System.out.print("Date of Birth (yyyyMMdd): ");
-        int dobInput = scanner.nextInt();
+//
+//        // Prompt for date of birth (the format should match your parsing logic)
+//        System.out.print("Date of Birth (yyyyMMdd): ");
+//        int dobInput = scanner.nextInt();
 
 
         // Create an instance of your service.AuthenticationService
         AuthenticationService authService = new AuthenticationService();
 
         // Call the registration method (adjust the method signature as needed)
-        User newUser = authService.registerUser(firstName, lastName, dobInput, email,
-                phoneNumber, address, username, password);
+        User newUser = authService.registerUser(firstName, lastName, username, password);
 
         if (newUser != null) {
             System.out.println("Registration successful! Sending you to login screen.");
