@@ -38,16 +38,11 @@ public class AuthenticationService {
     /**
      * @param firstName users first name
      * @param lastName users last name
-     * @param DOB users date of birth
-     * @param email users email
-     * @param phoneNumber users phone number
-     * @param address users address
      * @param username username
      * @param password password
      * @return return the user
      */
-    public User registerUser(String firstName, String lastName, int DOB, String email,
-                             int phoneNumber, String address, String username, String password) {
+    public User registerUser(String firstName, String lastName, String username, String password) {
 
         //Attempt to grab connection
         try (Connection connection = DatabaseConnection.getConnection()) {
@@ -59,18 +54,18 @@ public class AuthenticationService {
                 System.out.println("Username already exists");
                 return null;
             }
-            //Check if email already exists
-            if (userDAO.doesEmailExist(email, connection)) {
-                System.out.println("Email already exists");
-                return null;
-            }
+//            //Check if email already exists
+//            if (userDAO.doesEmailExist(email, connection)) {
+//                System.out.println("Email already exists");
+//                return null;
+//            }
 
             //user does not exist, hash password and create user
             String hashedPassword = encryptPassword(password);
 
 
             //Create new user object
-            User newUser = new User(firstName, lastName, DOB, email, phoneNumber, address, username, hashedPassword);
+            User newUser = new User(firstName, lastName, username, hashedPassword);
 
 
             //Insert the new user into the database

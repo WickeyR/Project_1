@@ -46,7 +46,7 @@ public class RegistrationUI {
         System.out.println("Welcome to the Bank");
         System.out.println("**********************************");
 
-        System.out.println("\n\nHow would you like to proceed? ");
+        System.out.println("\nHow would you like to proceed? ");
 
         System.out.println("1. Create Account");
         System.out.println("2. Login");
@@ -162,5 +162,24 @@ public class RegistrationUI {
 
     public static void userHomeScreen(User currentUser) {
         boolean sessionActive = true;
+
+        // Display the different options for the user
+        System.out.println("\n\n-----------------------------");
+        System.out.println("---------Your Account--------");
+        System.out.println("-----------------------------\n");
+
+        System.out.println("1 - View Account Balance");
+        System.out.println("2 - Send Money");
+        System.out.println("3 - Make Changes To Your Account");
+        System.out.println("\nMake your choice: ");
+
+        // Grab the users choice
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+
+        // The actions for each choice
+        switch (choice){
+
+        }
     }
 }

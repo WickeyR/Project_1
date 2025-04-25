@@ -10,7 +10,16 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Desktop/mysql-connector-j-9.3.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../mysql-connector-j-9.3.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Documents/Jar Files/mysql-connector-j-9.3.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

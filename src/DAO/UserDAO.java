@@ -17,23 +17,17 @@ public class UserDAO {
         // SQL statement to insert user into the database
 
         //Remove Email, Phone, Address,
-        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, address, username, password_hash, date_of_birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (first_name, last_name, username, password_hash) VALUES (?, ?, ?, ?)";
 
         try(PreparedStatement statement = connection.prepareStatement(sql)){
             // set string statements for user information into SQl database
             statement.setString(1, user.getFirstName());
             statement.setString(2, user.getLastName());
-            statement.setString(3, user.getEmail());
-            statement.setString(4, Integer.toString(user.getPhoneNumber()));
-            statement.setString(5, user.getAddress());
-            statement.setString(6, user.getUsername());
-            statement.setString(7, user.getPasswordHash());
+            statement.setString(3, user.getUsername());
+            statement.setString(4, user.getPasswordHash());
 
 
-            String s = Integer.toString(user.getDATE_OF_BIRTH());
-            String formattedDob = s.substring(0, 4) + "-" + s.substring(4, 6) + "-" + s.substring(6, 8);
-            Date dob = Date.valueOf(formattedDob);
-            statement.setDate(8, dob);
+
 
             // Execute insertion into SQL database
             statement.executeUpdate();
@@ -54,22 +48,12 @@ public class UserDAO {
                 statement.setString(1, username);
                 try(ResultSet rs = statement.executeQuery()){
                     if(rs.next()){
-                        // Convert DOB to yyyymmdd format
-                        String dobStr = rs.getString("date_of_birth");
-                        int dobInt = Integer.parseInt(dobStr.replace("-", ""));
-
-                        //Convert phone number to int
-                        int phone = Integer.parseInt(rs.getString("phone_number"));
 
 
-                        //Construc the new user and return it
+                        //Construct the new user and return it
                         return new User(
                                 rs.getString("first_name"),
                                 rs.getString("last_name"),
-                                dobInt,
-                                rs.getString("email"),
-                                phone,
-                                rs.getString("address"),
                                 rs.getString("username"),
                                 rs.getString("password_hash")
                         );
