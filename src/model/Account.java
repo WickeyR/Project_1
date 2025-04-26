@@ -1,123 +1,129 @@
-package model;//Author: Ricky Franco
-//25 Mar 2025
-//model.Account.java:
+package model;
 
+import java.time.LocalDate;
+
+/**
+ * Abstract base class for bank accounts.
+ */
 public abstract class Account {
-
     private final int ACCOUNT_NUMBER;
     private final int USER_ID;
-
     private final String ACCOUNT_TYPE;
-
-    private final String DATE_OPENED;
-
+    private final LocalDate DATE_OPENED;
     protected double balance;
-
     private String status;
 
     /**
-     * @param acctNumber the accounts unique identifier
-     * @param userid the users' unique idintifier
-     * @param accountType The account type (Checkings, Savings)
-     * @param dateOpened The account opening date
-     * @param initialBalance The initial balance
+     * Constructs a new account with an initial balance.
+     * @param acctNumber the account's unique identifier
+     * @param userId the user's unique identifier
+     * @param accountType the type of account ("CHECKING", "SAVINGS")
+     * @param initialBalance the starting balance
      */
-    public Account(int acctNumber, int userid, String accountType, String dateOpened, int initialBalance){
+    public Account(int acctNumber, int userId, String accountType, double initialBalance) {
         this.ACCOUNT_NUMBER = acctNumber;
-        this.USER_ID = userid;
+        this.USER_ID = userId;
         this.ACCOUNT_TYPE = accountType;
-        this.DATE_OPENED = dateOpened;
+        this.DATE_OPENED = LocalDate.now();
         this.balance = initialBalance;
-    }
-    public Account(int acctNumber, int userid, String accountType, String dateOpened){
-        this.ACCOUNT_NUMBER = acctNumber;
-        this.USER_ID = userid;
-        this.ACCOUNT_TYPE = accountType;
-        this.DATE_OPENED = dateOpened;
-        this.balance = 0;
+        this.status = "ACTIVE";
     }
 
-
-
-    //------------------ GETTER METHODS --------------//
-
-    /**
-     * @return model.Account number
-     */
-    public int getACCOUNT_NUMBER() {
+    //------------------ GETTERS ------------------//
+    public int getAccountNumber() {
         return ACCOUNT_NUMBER;
     }
-
-    /**
-     * @return users' unique ID
-     */
-    public int getUSER_ID(){
+    public int getUserId() {
         return USER_ID;
     }
-
-    /**
-     * @return type of account
-     */
-    public String getACCOUNT_TYPE(){
+    public String getAccountType() {
         return ACCOUNT_TYPE;
     }
-
-    /**
-     * @return date of account opening
-     */
-    public String getDATE_OPENED(){
+    public LocalDate getDateOpened() {
         return DATE_OPENED;
     }
-
-    /**
-     * @return account balance
-     */
-    public double getBalance(){
+    public double getBalance() {
         return balance;
     }
-
-    /**
-     * @return status of account
-     */
-    public String getStatus(){
+    public String getStatus() {
         return status;
     }
 
-
-    //------------------ SETTER METHODS --------------//
-
-
-    /**
-     * @param newStatus sets the new status of the account
-     */
-    public void setStatus(String newStatus){
-        this.status = newStatus;
+    //------------------ SETTERS ------------------//
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    //------------------ OTHER METHODS --------------//
-
+    //------------------ OPERATIONS ------------------//
     /**
-     * @param amount the amount of money to deposit into the account
-     * @return true or false based on success
+     * Deposit funds into the account.
+     * @param amount the amount to deposit
+     * @return true if deposit successful; false otherwise
      */
-    public boolean deposit(double amount){
-        if(amount > 0){
-            this.balance += amount;
+    public boolean deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
             return true;
-        }return false;
+        }
+        return false;
     }
 
     /**
-     * @param amount the amount of money to withdraw from the account
-     * @return true or false based on success
+     * Withdraw funds from the account.
+     * @param amount the amount to withdraw
+     * @return true if withdrawal successful; false otherwise
      */
-    public boolean withdraw(double amount){
-
-        if(((balance - amount) > 0) && amount > 0){
+    public boolean withdraw(double amount) {
+        if (amount > 0 && balance >= amount) {
             balance -= amount;
             return true;
         }
         return false;
     }
-}
 
+    //----------- Subclasses for Checking and Savings -----------//
+
+    /**
+     * Checking account: no additional fields.
+     */
+    public static class CheckingAccount extends Account {
+        public CheckingAccount(int acctNumber, int userId, double initialBalance) {
+            super(acctNumber, userId, "CHECKING", initialBalance);
+        }
+    }
+
+    /**
+     * Savings account: has an interest rate.
+     */
+    public static class SavingsAccount extends Account {
+        private double interestRate;
+
+        /**
+         * @param acctNumber the account's unique identifier
+         * @param userId the user's unique identifier
+         * @param initialBalance the starting balance
+         * @param interestRate the annual interest rate (e.g., 0.02 for 2%)
+         */
+        public SavingsAccount(int acctNumber, int userId, double initialBalance, double interestRate) {
+            super(acctNumber, userId, "SAVINGS", initialBalance);
+            this.interestRate = interestRate;
+        }
+
+        public double getInterestRate() {
+            return interestRate;
+        }
+
+        public void setInterestRate(double interestRate) {
+            this.interestRate = interestRate;
+        }
+
+        /**
+         * Apply interest to the balance.
+         */
+        public void applyInterest() {
+            if (interestRate > 0) {
+                balance += balance * interestRate;
+            }
+        }
+    }
+}
