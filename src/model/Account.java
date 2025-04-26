@@ -1,12 +1,12 @@
-package model;
+package model;//Author: Ricky Franco
+//25 Mar 2025
+//model.Account.java:
 
 import java.time.LocalDate;
 
-/**
- * Abstract base class for bank accounts.
- */
 public abstract class Account {
-    private final int ACCOUNT_NUMBER;
+    /** database-assigned account ID; null until inserted */
+    private Integer ACCOUNT_NUMBER;
     private final int USER_ID;
     private final String ACCOUNT_TYPE;
     private final LocalDate DATE_OPENED;
@@ -14,64 +14,112 @@ public abstract class Account {
     private String status;
 
     /**
-     * Constructs a new account with an initial balance.
-     * @param acctNumber the account's unique identifier
-     * @param userId the user's unique identifier
-     * @param accountType the type of account ("CHECKING", "SAVINGS")
-     * @param initialBalance the starting balance
+     * @param acctNumber    the account's unique identifier (from DB)
+     * @param userId        the user's unique identifier
+     * @param accountType   The account type ("CHECKING" or "SAVINGS")
+     * @param dateOpened    The account opening date
+     * @param initialBalance The initial balance
      */
-    public Account(int acctNumber, int userId, String accountType, double initialBalance) {
+    public Account(int acctNumber, int userId, String accountType, LocalDate dateOpened, double initialBalance) {
         this.ACCOUNT_NUMBER = acctNumber;
-        this.USER_ID = userId;
-        this.ACCOUNT_TYPE = accountType;
-        this.DATE_OPENED = LocalDate.now();
-        this.balance = initialBalance;
-        this.status = "ACTIVE";
+        this.USER_ID        = userId;
+        this.ACCOUNT_TYPE   = accountType;
+        this.DATE_OPENED    = dateOpened;
+        this.balance        = initialBalance;
+        this.status         = "ACTIVE";
     }
 
-    //------------------ GETTERS ------------------//
-    public int getAccountNumber() {
+    /**
+     * @param userId         the user's unique identifier
+     * @param accountType    The account type ("CHECKING" or "SAVINGS")
+     * @param initialBalance The initial balance
+     *
+     * Constructor for a new account; ACCOUNT_NUMBER set by DAO after insert.
+     */
+    public Account(int userId, String accountType, double initialBalance) {
+        this.ACCOUNT_NUMBER = null;
+        this.USER_ID        = userId;
+        this.ACCOUNT_TYPE   = accountType;
+        this.DATE_OPENED    = LocalDate.now();
+        this.balance        = initialBalance;
+        this.status         = "ACTIVE";
+    }
+
+    //------------------ GETTER METHODS --------------//
+
+    /**
+     * @return account number (null if not yet persisted)
+     */
+    public Integer getACCOUNT_NUMBER() {
         return ACCOUNT_NUMBER;
     }
-    public int getUserId() {
+
+    /** package-private: set by DAO after INSERT */
+    public void setACCOUNT_NUMBER(int acctNumber) {
+        this.ACCOUNT_NUMBER = acctNumber;
+    }
+
+    /**
+     * @return users' unique ID
+     */
+    public int getUSER_ID() {
         return USER_ID;
     }
-    public String getAccountType() {
+
+    /**
+     * @return type of account
+     */
+    public String getACCOUNT_TYPE() {
         return ACCOUNT_TYPE;
     }
-    public LocalDate getDateOpened() {
+
+    /**
+     * @return date of account opening
+     */
+    public LocalDate getDATE_OPENED() {
         return DATE_OPENED;
     }
+
+    /**
+     * @return account balance
+     */
     public double getBalance() {
         return balance;
     }
+
+    /**
+     * @return status of account
+     */
     public String getStatus() {
         return status;
     }
 
-    //------------------ SETTERS ------------------//
-    public void setStatus(String status) {
-        this.status = status;
+    //------------------ SETTER METHODS --------------//
+
+    /**
+     * @param newStatus sets the new status of the account
+     */
+    public void setStatus(String newStatus) {
+        this.status = newStatus;
     }
 
-    //------------------ OPERATIONS ------------------//
+    //------------------ OTHER METHODS --------------//
+
     /**
-     * Deposit funds into the account.
-     * @param amount the amount to deposit
-     * @return true if deposit successful; false otherwise
+     * @param amount the amount of money to deposit into the account
+     * @return true or false based on success
      */
     public boolean deposit(double amount) {
         if (amount > 0) {
-            balance += amount;
+            this.balance += amount;
             return true;
         }
         return false;
     }
 
     /**
-     * Withdraw funds from the account.
-     * @param amount the amount to withdraw
-     * @return true if withdrawal successful; false otherwise
+     * @param amount the amount of money to withdraw from the account
+     * @return true or false based on success
      */
     public boolean withdraw(double amount) {
         if (amount > 0 && balance >= amount) {
@@ -87,8 +135,22 @@ public abstract class Account {
      * Checking account: no additional fields.
      */
     public static class CheckingAccount extends Account {
-        public CheckingAccount(int acctNumber, int userId, double initialBalance) {
-            super(acctNumber, userId, "CHECKING", initialBalance);
+        /**
+         * @param userId         the user's unique identifier
+         * @param initialBalance the starting balance
+         */
+        public CheckingAccount(int userId, double initialBalance) {
+            super(userId, "CHECKING", initialBalance);
+        }
+
+        /**
+         * @param acctNumber     the account's unique identifier (from DB)
+         * @param userId         the user's unique identifier
+         * @param dateOpened     the account opening date
+         * @param balance        current balance
+         */
+        public CheckingAccount(int acctNumber, int userId, LocalDate dateOpened, double balance) {
+            super(acctNumber, userId, "CHECKING", dateOpened, balance);
         }
     }
 
@@ -99,26 +161,43 @@ public abstract class Account {
         private double interestRate;
 
         /**
-         * @param acctNumber the account's unique identifier
-         * @param userId the user's unique identifier
+         * @param userId         the user's unique identifier
          * @param initialBalance the starting balance
-         * @param interestRate the annual interest rate (e.g., 0.02 for 2%)
+         * @param interestRate   the annual interest rate (e.g., 0.02 for 2%)
          */
-        public SavingsAccount(int acctNumber, int userId, double initialBalance, double interestRate) {
-            super(acctNumber, userId, "SAVINGS", initialBalance);
-            this.interestRate = interestRate;
-        }
-
-        public double getInterestRate() {
-            return interestRate;
-        }
-
-        public void setInterestRate(double interestRate) {
+        public SavingsAccount(int userId, double initialBalance, double interestRate) {
+            super(userId, "SAVINGS", initialBalance);
             this.interestRate = interestRate;
         }
 
         /**
-         * Apply interest to the balance.
+         * @param acctNumber     the account's unique identifier (from DB)
+         * @param userId         the user's unique identifier
+         * @param dateOpened     the account opening date
+         * @param balance        current balance
+         * @param interestRate   the annual interest rate
+         */
+        public SavingsAccount(int acctNumber, int userId, LocalDate dateOpened, double balance, double interestRate) {
+            super(acctNumber, userId, "SAVINGS", dateOpened, balance);
+            this.interestRate = interestRate;
+        }
+
+        /**
+         * @return the interest rate
+         */
+        public double getInterestRate() {
+            return interestRate;
+        }
+
+        /**
+         * @param newInterestRate sets a new interest rate
+         */
+        public void setInterestRate(double newInterestRate) {
+            this.interestRate = newInterestRate;
+        }
+
+        /**
+         * calculate the interest to be added to the account
          */
         public void applyInterest() {
             if (interestRate > 0) {
