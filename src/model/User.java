@@ -7,11 +7,9 @@ import java.util.Objects;
 public class User {
 
 
-//    final int USER_ID;
+    private Integer userId;
      final String FIRST_NAME;
      final String LAST_NAME;
-
-
     private String username;
     private String passwordHash;
 
@@ -25,7 +23,7 @@ public class User {
     public User(String firstName, String lastName, String username, String passwordHash) {
 
         //Initialize user information
-
+        this.userId       = null;
         this.FIRST_NAME = firstName;
         this.LAST_NAME = lastName;
 
@@ -33,10 +31,21 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
+    public User(int userId, String firstName, String lastName, String username, String passwordHash) {
+        this.userId       = userId;
+        this.FIRST_NAME   = firstName;
+        this.LAST_NAME    = lastName;
+        this.username     = username;
+        this.passwordHash = passwordHash;
+    }
 
+    public void setUserId(int id) {
+        this.userId = id;
+    }
 
-
-
+    public int getUserId() {
+        return userId;
+    }
     //------------------ SETTER METHODS --------------//
 
 //    /**

@@ -12,27 +12,31 @@ public class UserDAO {
      * @param user The user to add to the database
      * @param connection The connection to the SQL database
      */
-    public void createUser(User user, Connection connection)  {
+    public void createUser(User user, Connection connection) throws SQLException {
+        String sql = """
+            INSERT INTO users (first_name, last_name, username, password_hash)
+            VALUES (?, ?, ?, ?)
+        """;
 
-        // SQL statement to insert user into the database
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, user.getFirstName());
+            ps.setString(2, user.getLastName());
+            ps.setString(3, user.getUsername());
+            ps.setString(4, user.getPasswordHash());
 
-        //Remove Email, Phone, Address,
-        String sql = "INSERT INTO users (first_name, last_name, username, password_hash) VALUES (?, ?, ?, ?)";
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                throw new SQLException("Creating user failed, no rows affected.");
+            }
 
-        try(PreparedStatement statement = connection.prepareStatement(sql)){
-            // set string statements for user information into SQl database
-            statement.setString(1, user.getFirstName());
-            statement.setString(2, user.getLastName());
-            statement.setString(3, user.getUsername());
-            statement.setString(4, user.getPasswordHash());
-
-
-
-
-            // Execute insertion into SQL database
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+            // Grab the auto-generated user_id
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    user.setUserId(keys.getInt(1));
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
         }
     }
 
@@ -41,29 +45,29 @@ public class UserDAO {
      * @return the user associated with the username
      */
     public static User getUserByUsername(String username) throws SQLException {
-        String sql = "SELECT * FROM users WHERE username = ?";
+        String sql = """
+            SELECT ID, first_name, last_name, username, password_hash
+              FROM users
+             WHERE username = ?
+        """;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)){
-                statement.setString(1, username);
-                try(ResultSet rs = statement.executeQuery()){
-                    if(rs.next()){
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int    id    = rs.getInt("ID");
+                    String fn    = rs.getString("first_name");
+                    String ln    = rs.getString("last_name");
+                    String un    = rs.getString("username");
+                    String phash = rs.getString("password_hash");
 
-                        //Construct the new user and return it
-                        return new User(
-                                rs.getString("first_name"),
-                                rs.getString("last_name"),
-                                rs.getString("username"),
-                                rs.getString("password_hash")
-                        );
-                    }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    // Use the constructor that accepts userId
+                    return new User(id, fn, ln, un, phash);
                 }
             }
-
-
+        }
         return null;
     }
 

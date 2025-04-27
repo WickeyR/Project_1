@@ -54,11 +54,6 @@ public class AuthenticationService {
                 System.out.println("Username already exists");
                 return null;
             }
-//            //Check if email already exists
-//            if (userDAO.doesEmailExist(email, connection)) {
-//                System.out.println("Email already exists");
-//                return null;
-//            }
 
             //user does not exist, hash password and create user
             String hashedPassword = encryptPassword(password);
@@ -70,6 +65,10 @@ public class AuthenticationService {
 
             //Insert the new user into the database
             userDAO.createUser(newUser, connection);
+
+            // Grant them a checking account
+            AccountService acctSvc = new AccountService();
+            acctSvc.openDefaultChecking(newUser.getUserId(), connection);
 
             //return user if success
             return newUser;
