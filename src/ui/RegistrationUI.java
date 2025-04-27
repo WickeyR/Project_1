@@ -1,6 +1,8 @@
 package ui;
 
+import DAO.AccountDAO;
 import DAO.UserDAO;
+import model.Account;
 import model.User;
 
 import java.security.NoSuchAlgorithmException;
@@ -8,6 +10,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 import service.AuthenticationService;
@@ -169,8 +172,10 @@ public class RegistrationUI {
         System.out.println("-----------------------------\n");
 
         System.out.println("1 - View Account Balance");
-        System.out.println("2 - Send Money");
-        System.out.println("3 - Make Changes To Your Account");
+        System.out.println("2 - Deposit or Withdraw money");
+        System.out.println("3 - Send Money");
+        System.out.println("4 - Make Changes To Your Account");
+        System.out.println("5 - Exit");
         System.out.println("\nMake your choice: ");
 
         // Grab the users choice
@@ -180,6 +185,74 @@ public class RegistrationUI {
         // The actions for each choice
         switch (choice){
 
+            case 1:
+                viewAccountBalance(currentUser);
+                break;
+
+            case 2:
+                updateBalance(currentUser);
+                break;
         }
+    }
+
+
+
+    public static void viewAccountBalance(User currentUser) {
+        try {
+            AccountDAO dao = new AccountDAO();
+            List<Account> accounts = dao.getAccountsByUser(currentUser.getUserId());
+
+            System.out.println("\n-- Your Accounts --");
+            for (Account acct : accounts) {
+                System.out.printf(
+                        "%s (ID %d): $%.2f%n",
+                        acct.getACCOUNT_TYPE(),
+                        acct.getACCOUNT_NUMBER(),
+                        acct.getBalance()
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        userHomeScreen(currentUser);
+    }
+
+    public static void updateBalance(User currentUser) {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            AccountDAO dao = new AccountDAO();
+            List<Account> accounts = dao.getAccountsByUser(currentUser.getUserId());
+
+            System.out.println("\nChoose an account:");
+            for (int i = 0; i < accounts.size(); i++) {
+                Account a = accounts.get(i);
+                System.out.printf("%d) %s (ID %d) – $%.2f%n",
+                        i+1, a.getACCOUNT_TYPE(), a.getACCOUNT_NUMBER(), a.getBalance());
+            }
+            System.out.print("Enter choice: ");
+            int idx = scanner.nextInt() - 1;
+            Account chosen = accounts.get(idx);
+
+            System.out.print("D)eposit or W)ithdraw? ");
+            String action = scanner.next();
+            System.out.print("Amount: ");
+            double amt = scanner.nextDouble();
+
+            boolean success;
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                if (action.equalsIgnoreCase("D")) {
+                    success = dao.deposit(conn, chosen.getACCOUNT_NUMBER(), amt);
+                } else {
+                    success = dao.withdraw(conn, chosen.getACCOUNT_NUMBER(), amt);
+                }
+            }
+
+            System.out.println(success
+                    ? "Transaction successful."
+                    : "Transaction failed.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        userHomeScreen(currentUser);
     }
 }
