@@ -1,258 +1,268 @@
 package ui;
 
 import DAO.AccountDAO;
+import DAO.TransactionDAO;
 import DAO.UserDAO;
 import model.Account;
+import model.Transaction;
 import model.User;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
-
+import service.AccountService;
 import service.AuthenticationService;
 import util.DatabaseConnection;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+
 public class RegistrationUI {
 
-    public static void main(String[] args) throws SQLException {
+    private static final Scanner SC = new Scanner(System.in);
 
-
-        try {
+    public static void main(String[] args) {
+        try (Connection c = DatabaseConnection.getConnection()) {
             System.out.println("Attempting to connect to database...");
-            //Test connection before
-            Connection Connection = DatabaseConnection.getConnection();
-            if (Connection != null) {
-                System.out.println("Connection Established");
-            }else{
-                //If connection failed, quit program
-                System.out.println("Connection Failed");
-                System.exit(0);
-            }
-            //Catch SQL connection
+            System.out.println(c != null ? "Connection Established" : "Connection Failed");
+            if (c == null) System.exit(0);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return;
         }
-        //Start main menu
-        MainMenu();
-
+        mainMenuLoop();
     }
 
+    private static void mainMenuLoop() {
+        while (true) {
+            System.out.println("**********************************");
+            System.out.println("Welcome to the Bank");
+            System.out.println("**********************************");
+            System.out.println("\nHow would you like to proceed? ");
+            System.out.println("1. Create Account");
+            System.out.println("2. Login");
+            System.out.println("3. Exit\n");
+            System.out.print("Enter your choice: ");
 
-    public static void MainMenu() throws SQLException {
-
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("**********************************");
-        System.out.println("Welcome to the Bank");
-        System.out.println("**********************************");
-
-        System.out.println("\nHow would you like to proceed? ");
-
-        System.out.println("1. Create Account");
-        System.out.println("2. Login");
-        System.out.println("3. Exit\n");
-
-        System.out.print("Enter your choice: ");
-        switch (scanner.nextInt()){
-            case 1:
-                createUser();
-                break;
-                case 2:
-                    login();
-                    break;
-            case 3:
-                System.exit(0);
-                break;
-
+            String choice = SC.nextLine().trim();
+            switch (choice) {
+                case "1" -> createUser();
+                case "2" -> login();
+                case "3" -> System.exit(0);
+                default  -> System.out.println("Invalid choice.");
+            }
         }
     }
 
-
-    public static void login() throws SQLException {
-        Scanner scanner = new Scanner(System.in);
+    private static void login() {
         System.out.println("**********************************");
         System.out.println("Welcome to the Login Screen");
         System.out.println("**********************************");
-
         System.out.print("Enter your username: ");
-        String username = scanner.nextLine();
+        String username = SC.nextLine().trim();
 
-        while(true){
+        while (true) {
             System.out.print("Enter your password: ");
-            String password = scanner.nextLine();
-
-
-
-            //Attempt to login user
-            if(AuthenticationService.login(username, password)){
-                //Continue with true case
+            String password = SC.nextLine();
+            if (AuthenticationService.login(username, password)) {
                 System.out.println("Login Successful");
-                System.out.println("Sending you to home screen");
-
-                //Send the currentUser to their menu
-                User currentUser = UserDAO.getUserByUsername(username);
-                userHomeScreen(currentUser);
-                break;
-            }else{
-                //Continue on false case
+                try {
+                    User currentUser = UserDAO.getUserByUsername(username);
+                    userScreenLoop(currentUser);
+                    break;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            } else {
                 System.out.println("Login Failed, try again");
             }
         }
-
-
     }
-    public static void createUser() throws SQLException {
 
+    private static void createUser() {
         System.out.println("**********************************");
         System.out.println("Welcome to the Bank Registration Portal");
         System.out.println("Please fill out the following information:");
         System.out.println("**********************************");
 
-
-        Scanner scanner = new Scanner(System.in);
-        // Prompt for first name
         System.out.print("First Name: ");
-        String firstName = scanner.nextLine();
-
-        // Prompt for last name
+        String firstName = SC.nextLine().trim();
         System.out.print("Last Name: ");
-        String lastName = scanner.nextLine();
-
-//        // Prompt for email
-//        System.out.print("Email: ");
-//        String email = scanner.nextLine();
-//
-//        // Prompt for phone number (as text to accommodate any formatting)
-//        System.out.print("Phone Number: ");
-//        int phoneNumber = scanner.nextInt();
-//        scanner.nextLine();
-//
-//        // Prompt for address
-//        System.out.print("Address: ");
-//        String address = scanner.nextLine();
-
-        // Prompt for username
+        String lastName = SC.nextLine().trim();
         System.out.print("Username: ");
-        String username = scanner.nextLine();
-
-        // Prompt for password
+        String username = SC.nextLine().trim();
         System.out.print("Password: ");
-        String password = scanner.nextLine();
-//
-//        // Prompt for date of birth (the format should match your parsing logic)
-//        System.out.print("Date of Birth (yyyyMMdd): ");
-//        int dobInput = scanner.nextInt();
+        String password = SC.nextLine();
 
+        if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+            System.out.println("All fields are required.");
+            return;
+        }
 
-        // Create an instance of your service.AuthenticationService
         AuthenticationService authService = new AuthenticationService();
-
-        // Call the registration method (adjust the method signature as needed)
         User newUser = authService.registerUser(firstName, lastName, username, password);
 
-        if (newUser != null) {
-            System.out.println("Registration successful! Sending you to login screen.");
-            login();
-        } else {
-            System.out.println("Registration failed. Username or email might already exist.");
+        if (newUser == null) {
+            System.out.println("Registration failed. Username might already exist.");
+            return;
         }
 
-        scanner.close();
-    }
+        System.out.print("Open a savings account now at 4% APR? (Y/N): ");
+        if (SC.nextLine().trim().equalsIgnoreCase("Y")) {
+            System.out.print("How much would you like to move from your checking to savings? ");
+            double amt;
+            try { amt = Double.parseDouble(SC.nextLine()); }
+            catch (NumberFormatException ex) { System.out.println("Invalid amount."); return; }
 
-    public static void userHomeScreen(User currentUser) {
-        boolean sessionActive = true;
+            if (amt <= 0) { System.out.println("Amount must be positive."); return; }
 
-        // Display the different options for the user
-        System.out.println("\n\n-----------------------------");
-        System.out.println("---------Your Account--------");
-        System.out.println("-----------------------------\n");
-
-        System.out.println("1 - View Account Balance");
-        System.out.println("2 - Deposit or Withdraw money");
-        System.out.println("3 - Send Money");
-        System.out.println("4 - Make Changes To Your Account");
-        System.out.println("5 - Exit");
-        System.out.println("\nMake your choice: ");
-
-        // Grab the users choice
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-
-        // The actions for each choice
-        switch (choice){
-
-            case 1:
-                viewAccountBalance(currentUser);
-                break;
-
-            case 2:
-                updateBalance(currentUser);
-                break;
-        }
-    }
-
-
-
-    public static void viewAccountBalance(User currentUser) {
-        try {
-            AccountDAO dao = new AccountDAO();
-            List<Account> accounts = dao.getAccountsByUser(currentUser.getUserId());
-
-            System.out.println("\n-- Your Accounts --");
-            for (Account acct : accounts) {
-                System.out.printf(
-                        "%s (ID %d): $%.2f%n",
-                        acct.getACCOUNT_TYPE(),
-                        acct.getACCOUNT_NUMBER(),
-                        acct.getBalance()
-                );
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                AccountDAO acctDao = new AccountDAO();
+                Integer chkId = acctDao.getCheckingIdForUser(newUser.getUserId(), conn);
+                if (chkId == null) {
+                    System.out.println("Could not locate your checking account.");
+                } else {
+                    boolean ok = new AccountService().openSavingsFromChecking(newUser.getUserId(), chkId, amt);
+                    System.out.println(ok ? "Savings account created!" : "Could not open savings account.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        userHomeScreen(currentUser);
+        login();
     }
 
-    public static void updateBalance(User currentUser) {
-        Scanner scanner = new Scanner(System.in);
+    private static void userScreenLoop(User currentUser) {
+        while (true) {
+            System.out.println("\n\n-----------------------------");
+            System.out.println("---------Your Account--------");
+            System.out.println("-----------------------------\n");
+            System.out.println("1 - View Account Balance");
+            System.out.println("2 - Deposit or Withdraw money");
+            System.out.println("3 - View Recent Activity");
+            System.out.println("4 - Open Savings Account");
+            System.out.println("5 - Exit");
+            System.out.print("\nMake your choice: ");
+
+            String choice = SC.nextLine().trim();
+            switch (choice) {
+                case "1" -> viewBalances(currentUser);
+                case "2" -> depositWithdraw(currentUser);
+                case "3" -> viewRecent(currentUser);
+                case "4" -> openSavingsFlow(currentUser);
+                case "5" -> { return; }
+                default  -> System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private static void viewBalances(User user) {
         try {
             AccountDAO dao = new AccountDAO();
-            List<Account> accounts = dao.getAccountsByUser(currentUser.getUserId());
+            List<Account> accts = dao.getAccountsByUser(user.getUserId());
+            if (accts.isEmpty()) System.out.println("No accounts.");
+            else {
+                System.out.println("\n-- Your Accounts --");
+                for (Account a : accts)
+                    System.out.printf("%s (ID %d): $%.2f%n", a.getACCOUNT_TYPE(), a.getACCOUNT_NUMBER(), a.getBalance());
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
 
-            System.out.println("\nChoose an account:");
-            for (int i = 0; i < accounts.size(); i++) {
-                Account a = accounts.get(i);
+    private static void depositWithdraw(User user) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            AccountDAO acctDao = new AccountDAO();
+            TransactionDAO txDao = new TransactionDAO();
+            List<Account> accts = acctDao.getAccountsByUser(user.getUserId());
+            if (accts.isEmpty()) { System.out.println("No accounts."); return; }
+
+            for (int i = 0; i < accts.size(); i++)
                 System.out.printf("%d) %s (ID %d) – $%.2f%n",
-                        i+1, a.getACCOUNT_TYPE(), a.getACCOUNT_NUMBER(), a.getBalance());
-            }
+                        i + 1, accts.get(i).getACCOUNT_TYPE(), accts.get(i).getACCOUNT_NUMBER(), accts.get(i).getBalance());
+
             System.out.print("Enter choice: ");
-            int idx = scanner.nextInt() - 1;
-            Account chosen = accounts.get(idx);
+            int idx = Integer.parseInt(SC.nextLine()) - 1;
+            if (idx < 0 || idx >= accts.size()) { System.out.println("Bad choice."); return; }
+            Account chosen = accts.get(idx);
 
             System.out.print("D)eposit or W)ithdraw? ");
-            String action = scanner.next();
+            String action = SC.nextLine().trim();
             System.out.print("Amount: ");
-            double amt = scanner.nextDouble();
+            double amt = Double.parseDouble(SC.nextLine());
+            if (amt <= 0) { System.out.println("Amount must be positive."); return; }
 
-            boolean success;
-            try (Connection conn = DatabaseConnection.getConnection()) {
-                if (action.equalsIgnoreCase("D")) {
-                    success = dao.deposit(conn, chosen.getACCOUNT_NUMBER(), amt);
-                } else {
-                    success = dao.withdraw(conn, chosen.getACCOUNT_NUMBER(), amt);
+            boolean success = false;
+
+            if (action.equalsIgnoreCase("D") && "SAVING".equals(chosen.getACCOUNT_TYPE())) {
+                Integer chkId = acctDao.getCheckingIdForUser(user.getUserId(), conn);
+                if (chkId == null) { System.out.println("Need a checking account."); return; }
+                if (!acctDao.withdraw(conn, chkId, amt)) { System.out.println("Insufficient funds."); return; }
+                if (acctDao.deposit(conn, chosen.getACCOUNT_NUMBER(), amt)) {
+                    txDao.logTransaction(conn, chkId, "WITHDRAWAL", amt, "Transfer to savings", "COMPLETED");
+                    txDao.logTransaction(conn, chosen.getACCOUNT_NUMBER(), "DEPOSIT", amt, "Transfer from checking", "COMPLETED");
+                    success = true;
                 }
-            }
+            } else {
+                if (action.equalsIgnoreCase("D"))
+                    success = acctDao.deposit(conn, chosen.getACCOUNT_NUMBER(), amt);
+                else
+                    success = acctDao.withdraw(conn, chosen.getACCOUNT_NUMBER(), amt);
 
-            System.out.println(success
-                    ? "Transaction successful."
-                    : "Transaction failed.");
-        } catch (SQLException e) {
-            e.printStackTrace();
+                if (success)
+                    txDao.logTransaction(conn, chosen.getACCOUNT_NUMBER(),
+                            action.equalsIgnoreCase("D") ? "DEPOSIT" : "WITHDRAWAL",
+                            amt, null, "COMPLETED");
+            }
+            System.out.println(success ? "Transaction successful." : "Transaction failed.");
+        } catch (SQLException | NumberFormatException | InputMismatchException e) {
+            System.out.println("Invalid input.");
         }
-        userHomeScreen(currentUser);
+    }
+
+    private static void viewRecent(User user) {
+        try {
+            AccountDAO acctDao = new AccountDAO();
+            TransactionDAO txDao = new TransactionDAO();
+            List<Account> accts = acctDao.getAccountsByUser(user.getUserId());
+            if (accts.isEmpty()) { System.out.println("No accounts."); return; }
+
+            for (int i = 0; i < accts.size(); i++)
+                System.out.printf("%d) %s (ID %d)%n", i + 1, accts.get(i).getACCOUNT_TYPE(), accts.get(i).getACCOUNT_NUMBER());
+            System.out.print("Enter choice: ");
+            int idx = Integer.parseInt(SC.nextLine()) - 1;
+            if (idx < 0 || idx >= accts.size()) { System.out.println("Bad choice."); return; }
+            int acctId = accts.get(idx).getACCOUNT_NUMBER();
+
+            List<Transaction> txs = txDao.getTransactionsByAccount(acctId, 10);
+            if (txs.isEmpty()) System.out.println("No transactions yet.");
+            else {
+                System.out.println("\n--- Recent Transactions ---");
+                for (Transaction t : txs)
+                    System.out.printf("%-4d %-10s $%-9.2f %s%n",
+                            t.getTRANSACTION_NUMBER(), t.getTRANSCATION_TYPE(), t.getAMOUNT(), t.getTIME_STAMP());
+            }
+        } catch (SQLException | NumberFormatException e) { e.printStackTrace(); }
+    }
+
+    private static void openSavingsFlow(User user) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            AccountDAO acctDao = new AccountDAO();
+            Integer chkId = acctDao.getCheckingIdForUser(user.getUserId(), conn);
+            if (chkId == null) { System.out.println("Need a checking account first."); return; }
+            boolean hasSav = acctDao.getAccountsByUser(user.getUserId())
+                    .stream().anyMatch(a -> "SAVING".equals(a.getACCOUNT_TYPE()));
+            if (hasSav) { System.out.println("You already have a savings account."); return; }
+
+            System.out.println("Current offer: 4% APR, paid monthly.");
+            System.out.print("Proceed? (Y/N) ");
+            if (!SC.nextLine().trim().equalsIgnoreCase("Y")) return;
+
+            System.out.print("Amount to move from Checking ➜ Savings: ");
+            double amt = Double.parseDouble(SC.nextLine());
+            if (amt <= 0) { System.out.println("Amount must be positive."); return; }
+
+            boolean ok = new AccountService().openSavingsFromChecking(user.getUserId(), chkId, amt);
+            System.out.println(ok ? "Savings account created." : "Operation failed.");
+        } catch (SQLException | NumberFormatException e) { e.printStackTrace(); }
     }
 }

@@ -166,7 +166,7 @@ public abstract class Account {
          * @param interestRate   the annual interest rate (e.g., 0.02 for 2%)
          */
         public SavingsAccount(int userId, double initialBalance, double interestRate) {
-            super(userId, "SAVINGS", initialBalance);
+            super(userId, "SAVING", initialBalance);
             this.interestRate = interestRate;
         }
 
@@ -178,7 +178,7 @@ public abstract class Account {
          * @param interestRate   the annual interest rate
          */
         public SavingsAccount(int acctNumber, int userId, LocalDate dateOpened, double balance, double interestRate) {
-            super(acctNumber, userId, "SAVINGS", dateOpened, balance);
+            super(acctNumber, userId, "SAVING", dateOpened, balance);
             this.interestRate = interestRate;
         }
 

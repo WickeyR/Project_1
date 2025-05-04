@@ -48,6 +48,16 @@ public class AccountDAO {
         }
     }
 
+    public Integer getCheckingIdForUser(int userId, Connection conn) throws SQLException {
+        String sql = "SELECT account_id FROM account WHERE user_id=? AND account_type='CHECKING' LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : null;
+            }
+        }
+    }
+
     public boolean deposit(Connection conn, int acctId, double amt) {
         String sql = "UPDATE account SET balance = balance + ? WHERE account_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

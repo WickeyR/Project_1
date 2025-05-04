@@ -3,38 +3,77 @@ package DAO;
 import model.Transaction;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TransactionDAO {
 
     /**
-     * @param connection SQL connection
-     * @param accountID AccountID associated with the transaction
-     * @param transactionType type of transaction (withdraw, deposit)
      * @param amount dollar amount of the transaction
-     * @param description short summary of transaction
      * @return true or false based on success
      */
-    public boolean logTransaction(Connection connection, int accountID, String transactionType, double amount, String description){
-        //Attempt to post transaction
-        if(true){
-            return true;
+    public boolean logTransaction(Connection conn,
+                                  int accountId,
+                                  String type,        // "DEPOSIT","WITHDRAWAL","TRANSFER"
+                                  double amount,
+                                  String desc,        // nullable
+                                  String status)      // "COMPLETED" by default
+            throws SQLException {
 
+        String sql = """
+            INSERT INTO transactions
+              (account_id, transaction_type, amount, time_stamp, description, status)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+            """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt   (1, accountId);
+            ps.setString(2, type);
+            ps.setDouble(3, amount);
+            ps.setString(4, desc);
+            ps.setString(5, status);
+            return ps.executeUpdate() == 1;
         }
-        return false;
     }
 
     /**
-     * @param accountID AccountId associated with the transatcions
-     * @param connection SQL connection
+     * @param acctId AccountId associated with the transatcions
      * @return a list of transactions
      */
-    public ArrayList<Transaction> getTransactionsByAccount(int accountID, Connection connection){
+    public List<Transaction> getTransactionsByAccount(int acctId, int limit) throws SQLException {
+        String sql = """
+            SELECT transaction_id, transaction_type, amount,
+                   time_stamp, description, status
+              FROM transactions
+             WHERE account_id = ?
+             ORDER BY time_stamp DESC
+             LIMIT ?
+            """;
+        List<Transaction> list = new ArrayList<>();
+        try (Connection conn = util.DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        //Attempt to grab transactions for a specific account
-        if(true){
-            return null ;
+            ps.setInt(1, acctId);
+            ps.setInt(2, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Transaction(
+                            rs.getInt("transaction_id"),
+                            acctId,
+                            rs.getString("transaction_type"),
+                            rs.getDouble("amount"),
+                            rs.getTime("time_stamp"),
+                            rs.getString("description"),
+                            rs.getString("status")));
+                }
+            }
         }
-        return null;
+        return list;
     }
+
+
+
 }
