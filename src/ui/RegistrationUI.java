@@ -137,11 +137,13 @@ public class RegistrationUI {
             System.out.println("\n\n-----------------------------");
             System.out.println("---------Your Account--------");
             System.out.println("-----------------------------\n");
+
             System.out.println("1 - View Account Balance");
             System.out.println("2 - Deposit or Withdraw money");
             System.out.println("3 - View Recent Activity");
             System.out.println("4 - Open Savings Account");
-            System.out.println("5 - Exit");
+            System.out.println("5 - Send Money");
+            System.out.println("6 - Exit");
             System.out.print("\nMake your choice: ");
 
             String choice = SC.nextLine().trim();
@@ -150,12 +152,37 @@ public class RegistrationUI {
                 case "2" -> depositWithdraw(currentUser);
                 case "3" -> viewRecent(currentUser);
                 case "4" -> openSavingsFlow(currentUser);
-                case "5" -> { return; }
+                case "5" -> sendMoneyFlow(currentUser);
+                case "6" -> closeAccountFlow(currentUser);
                 default  -> System.out.println("Invalid choice.");
             }
         }
     }
 
+    private static void sendMoneyFlow(User user) {
+        System.out.print("Recipient’s username: ");
+        String recipient = SC.nextLine().trim();
+
+        System.out.print("Amount to send: ");
+        double amt;
+        try {
+            amt = Double.parseDouble(SC.nextLine());
+            if (amt <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount.");
+            return;
+        }
+
+        try {
+            boolean ok = new AccountService()
+                    .transfer(user.getUsername(), recipient, amt);
+            System.out.println(ok
+                    ? "Transfer successful."
+                    : "Transfer failed (insufficient funds?).");
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
     private static void viewBalances(User user) {
         try {
             AccountDAO dao = new AccountDAO();
@@ -265,4 +292,50 @@ public class RegistrationUI {
             System.out.println(ok ? "Savings account created." : "Operation failed.");
         } catch (SQLException | NumberFormatException e) { e.printStackTrace(); }
     }
+    private static void closeAccountFlow(User user) {
+        try {
+            AccountDAO dao = new AccountDAO();
+            List<Account> accts = dao.getAccountsByUser(user.getUserId());
+            if (accts.isEmpty()) {
+                System.out.println("No accounts to close.");
+                return;
+            }
+
+            System.out.println("\nWhich account would you like to close?");
+            for (int i = 0; i < accts.size(); i++) {
+                Account a = accts.get(i);
+                System.out.printf("%d) %s (ID %d) – $%.2f%n",
+                        i + 1, a.getACCOUNT_TYPE(), a.getACCOUNT_NUMBER(), a.getBalance());
+            }
+            System.out.print("Enter choice: ");
+            int idx = Integer.parseInt(SC.nextLine()) - 1;
+            if (idx < 0 || idx >= accts.size()) {
+                System.out.println("Invalid choice.");
+                return;
+            }
+            Account chosen = accts.get(idx);
+
+            if (chosen.getBalance() != 0.0) {
+                System.out.println("Balance must be zero to close.");
+                return;
+            }
+
+            System.out.print("Confirm close of account ID "
+                    + chosen.getACCOUNT_NUMBER() + "? (Y/N): ");
+            if (!SC.nextLine().trim().equalsIgnoreCase("Y")) {
+                return;
+            }
+
+            boolean success = new AccountService()
+                    .closeAccount(user.getUserId(), chosen.getACCOUNT_NUMBER());
+            System.out.println(success
+                    ? "Account closed."
+                    : "Could not close account.");
+        } catch (SQLException | NumberFormatException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+
+
 }

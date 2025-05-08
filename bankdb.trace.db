@@ -1,0 +1,299 @@
+2025-05-08 18:56:42.281047Z database: wrong user or password; user: ""
+org.h2.message.DbException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.engine.Engine.openSession(Engine.java:154)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:344)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.Driver.connect(Driver.java:59)
+	at com.intellij.database.remote.jdbc.helpers.JdbcHelperImpl.connect(JdbcHelperImpl.java:790)
+	at com.intellij.database.remote.jdbc.impl.RemoteDriverImpl.connect(RemoteDriverImpl.java:153)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.jdbc.JdbcSQLInvalidAuthorizationSpecException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:522)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 26 more
+2025-05-08 18:56:42.647379Z database: wrong user or password; user: ""
+org.h2.message.DbException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.engine.Engine.openSession(Engine.java:154)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:344)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.Driver.connect(Driver.java:59)
+	at com.intellij.database.remote.jdbc.helpers.JdbcHelperImpl.connect(JdbcHelperImpl.java:790)
+	at com.intellij.database.remote.jdbc.impl.RemoteDriverImpl.connect(RemoteDriverImpl.java:153)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.jdbc.JdbcSQLInvalidAuthorizationSpecException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:522)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 26 more
+2025-05-08 18:58:00.178739Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ACCOUNT" not found; SQL statement:
+CREATE TABLE IF NOT EXISTS transactions (
+                                            transaction_id   INT AUTO_INCREMENT PRIMARY KEY,
+                                            account_id       INT NOT NULL,
+                                            transaction_type ENUM('DEPOSIT','WITHDRAWAL','TRANSFER') NOT NULL,
+                                            amount           DOUBLE NOT NULL,
+                                            time_stamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                            description      VARCHAR(255),
+                                            status           ENUM('COMPLETED','FAILED','PENDING') DEFAULT 'COMPLETED',
+                                            FOREIGN KEY (account_id) REFERENCES account(account_id)
+) [42102-232]
+2025-05-08 18:58:10.018512Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found; SQL statement:
+CREATE TABLE IF NOT EXISTS account (
+                                       account_id    INT AUTO_INCREMENT PRIMARY KEY,
+                                       user_id       INT NOT NULL,
+                                       account_type  ENUM('CHECKING','SAVING') NOT NULL,
+                                       balance       DOUBLE NOT NULL DEFAULT 0,
+                                       interest_rate DOUBLE,
+                                       FOREIGN KEY (user_id) REFERENCES users(ID)
+) [42102-232]
+2025-05-08 12:05:08.613501-07:00 database: flush
+org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/rifra/IdeaProjects/Assignment_1_3560/Project_1/bankdb.mv.db [2.2.224/7]" [50000-224]
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convert(DbException.java:407)
+	at org.h2.mvstore.db.Store.lambda$new$0(Store.java:122)
+	at org.h2.mvstore.MVStore.handleException(MVStore.java:1546)
+	at org.h2.mvstore.MVStore.panic(MVStore.java:371)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:291)
+	at org.h2.mvstore.MVStore$Builder.open(MVStore.java:2035)
+	at org.h2.mvstore.db.Store.<init>(Store.java:133)
+	at org.h2.engine.Database.<init>(Database.java:326)
+	at org.h2.engine.Engine.openSession(Engine.java:92)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:343)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:125)
+	at org.h2.Driver.connect(Driver.java:59)
+	at java.sql/java.sql.DriverManager.getConnection(DriverManager.java:683)
+	at java.sql/java.sql.DriverManager.getConnection(DriverManager.java:230)
+	at util.DatabaseConnection.getConnection(DatabaseConnection.java:29)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:19)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: org.h2.jdbc.JdbcSQLNonTransientException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/rifra/IdeaProjects/Assignment_1_3560/Project_1/bankdb.mv.db [2.2.224/7]" [50000-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 20 more
+Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/rifra/IdeaProjects/Assignment_1_3560/Project_1/bankdb.mv.db [2.2.224/7]
+	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at org.h2.mvstore.SingleFileStore.lockFileChannel(SingleFileStore.java:143)
+	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:117)
+	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:81)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:286)
+	... 14 more
+2025-05-08 12:05:40.687948-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /schema.sql"; "classpath:schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:12:54.697592-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /schema.sql"; "classpath:schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:13:10.193071-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /schema.sql"; "classpath:schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 19:16:09.401227Z database: wrong user or password; user: ""
+org.h2.message.DbException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.engine.Engine.openSession(Engine.java:154)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:344)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.Driver.connect(Driver.java:59)
+	at com.intellij.database.remote.jdbc.helpers.JdbcHelperImpl.connect(JdbcHelperImpl.java:790)
+	at com.intellij.database.remote.jdbc.impl.RemoteDriverImpl.connect(RemoteDriverImpl.java:153)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.jdbc.JdbcSQLInvalidAuthorizationSpecException: Wrong user name or password [28000-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:522)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 26 more
+2025-05-08 12:16:50.535476-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /schema.sql"; "classpath:schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:17:53.243181-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /schema.sql"; "classpath:schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:21:50.736144-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /src/schema.sql"; "classpath:src/schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:src/schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /src/schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:22:18.893761-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "java.io.FileNotFoundException: resource /src/schema.sql"; "classpath:src/schema.sql"; SQL statement:
+RUNSCRIPT FROM 'classpath:src/schema.sql' [90031-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convertIOException(DbException.java:454)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:170)
+	at org.h2.command.dml.RunScriptCommand.update(RunScriptCommand.java:53)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:169)
+	at org.h2.command.Command.executeUpdate(Command.java:256)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:262)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:231)
+	at util.DatabaseConnection.<clinit>(DatabaseConnection.java:21)
+	at ui.RegistrationUI.main(RegistrationUI.java:24)
+Caused by: java.io.FileNotFoundException: resource /src/schema.sql
+	at org.h2.store.fs.disk.FilePathDisk.newInputStream(FilePathDisk.java:434)
+	at org.h2.store.fs.FileUtils.newInputStream(FileUtils.java:277)
+	at org.h2.command.dml.ScriptBase.openInput(ScriptBase.java:168)
+	... 7 more
+2025-05-08 12:33:48.511310-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "users" not found; SQL statement:
+SELECT COUNT(*) FROM users WHERE username = ? [42102-224]
+2025-05-08 12:33:48.513312-07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "users" not found; SQL statement:
+    INSERT INTO users (first_name, last_name, username, password_hash)
+    VALUES (?, ?, ?, ?)
+ [42102-224]

@@ -9,6 +9,43 @@ import java.util.List;
 
 public class AccountDAO {
 
+
+    /**
+     * Close (delete) an account once its balance is zero.
+     * Also deletes all its transactions first.
+     * @param acctId account to close
+     * @param conn   open Connection (in a transaction)
+     * @return true if deleted
+     */
+    public boolean closeAccount(int acctId, Connection conn) throws SQLException {
+        // 1) ensure zero balance
+        String checkSql = "SELECT balance FROM account WHERE account_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+            ps.setInt(1, acctId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next() || rs.getDouble(1) != 0.0) {
+                    return false; // non-zero or missing
+                }
+            }
+        }
+
+        // 2) delete transactions
+        String delTx = "DELETE FROM transactions WHERE account_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(delTx)) {
+            ps.setInt(1, acctId);
+            ps.executeUpdate();
+        }
+
+        // 3) delete account
+        String delAcct = "DELETE FROM account WHERE account_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(delAcct)) {
+            ps.setInt(1, acctId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+
+
     /* ---------- create ---------- */
     public boolean createAccount(Account acct, Connection conn) throws SQLException {
         String sql = """
