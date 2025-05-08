@@ -8,6 +8,52 @@ import java.sql.*;
 public class UserDAO {
 
 
+
+    /**
+     * Update the password hash for a user.
+     * @param userId   the user’s ID
+     * @param newHash  the new password hash
+     * @param conn     open Connection
+     * @return true if exactly one row was updated
+     */
+    public boolean updatePassword(int userId, String newHash, Connection conn) throws SQLException {
+        String sql = "UPDATE users SET password_hash = ? WHERE ID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newHash);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    /**
+     * Fetch a user by numeric ID.
+     * @param userId the user’s ID
+     * @return User or null
+     */
+    public static User getUserById(int userId) throws SQLException {
+        String sql = """
+            SELECT ID, first_name, last_name, username, password_hash
+              FROM users
+             WHERE ID = ?
+        """;
+        try (Connection c = DatabaseConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new User(
+                            rs.getInt("ID"),
+                            rs.getString("first_name"),
+                            rs.getString("last_name"),
+                            rs.getString("username"),
+                            rs.getString("password_hash")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * @param user The user to add to the database
      * @param connection The connection to the SQL database

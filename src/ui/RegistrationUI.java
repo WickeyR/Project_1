@@ -141,8 +141,8 @@ public class RegistrationUI {
             System.out.println("1 - View Account Balance");
             System.out.println("2 - Deposit or Withdraw money");
             System.out.println("3 - View Recent Activity");
-            System.out.println("4 - Open Savings Account");
-            System.out.println("5 - Send Money");
+            System.out.println("4 - Send Money");
+            System.out.println("5 - Manage Account");
             System.out.println("6 - Exit");
             System.out.print("\nMake your choice: ");
 
@@ -151,9 +151,12 @@ public class RegistrationUI {
                 case "1" -> viewBalances(currentUser);
                 case "2" -> depositWithdraw(currentUser);
                 case "3" -> viewRecent(currentUser);
-                case "4" -> openSavingsFlow(currentUser);
-                case "5" -> sendMoneyFlow(currentUser);
-                case "6" -> closeAccountFlow(currentUser);
+                case "4" -> sendMoneyFlow(currentUser);
+                case "5" -> manageAccountFlow(currentUser);
+                case "6" -> {
+                    // back to main menu
+                    return;
+                }
                 default  -> System.out.println("Invalid choice.");
             }
         }
@@ -195,6 +198,52 @@ public class RegistrationUI {
             }
         } catch (SQLException e) { e.printStackTrace(); }
     }
+    private static void manageAccountFlow(User user) {
+        while (true) {
+            System.out.println("\n---- Manage Account ----");
+            System.out.println("1. Open Savings Account");
+            System.out.println("2. Close Account");
+            System.out.println("3. Change Password");
+            System.out.println("4. Back");
+            System.out.print("Enter your choice: ");
+
+            String c = SC.nextLine().trim();
+            switch (c) {
+                case "1" -> openSavingsFlow(user);
+                case "2" -> closeAccountFlow(user);
+                case "3" -> changePasswordFlow(user);
+                case "4" -> {
+                    // back to your main account menu
+                    return;
+                }
+                default -> System.out.println("Invalid choice.");
+            }
+        }
+    }
+    private static void changePasswordFlow(User user) {
+        System.out.println("---- Change Password ----");
+        System.out.print("Enter current password: ");
+        String oldPw = SC.nextLine();
+        System.out.print("Enter new password: ");
+        String newPw = SC.nextLine();
+        System.out.print("Confirm new password: ");
+        String confirm = SC.nextLine();
+
+        if (!newPw.equals(confirm)) {
+            System.out.println("Passwords do not match.");
+            return;
+        }
+        if (newPw.isEmpty()) {
+            System.out.println("New password cannot be empty.");
+            return;
+        }
+
+        boolean ok = new AuthenticationService()
+                .changePassword(user.getUserId(), oldPw, newPw);
+        if (ok) {
+            System.out.println("Password changed. Please log in again.");
+            login();
+        }}
 
     private static void depositWithdraw(User user) {
         try (Connection conn = DatabaseConnection.getConnection()) {

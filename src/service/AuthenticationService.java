@@ -21,7 +21,41 @@ import java.sql.SQLException;
 public class AuthenticationService {
 
 
+    /**
+     * Change a user’s password.
+     * @param userId       the user’s ID
+     * @param oldPassword  their current password
+     * @param newPassword  the new desired password
+     * @return true if change succeeded
+     */
+    public boolean changePassword(int userId, String oldPassword, String newPassword) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            UserDAO dao = new UserDAO();
+            // 1) fetch the current user record
+            User u = UserDAO.getUserById(userId);
+            if (u == null) return false;
 
+            // 2) verify old password
+            String oldHash = encryptPassword(oldPassword);
+            if (!oldHash.equals(u.getPasswordHash())) {
+                System.out.println("Current password incorrect.");
+                return false;
+            }
+
+            // 3) hash & update
+            String newHash = encryptPassword(newPassword);
+            if (newHash.equals(oldHash)) {
+                System.out.println("New password must differ from old password.");
+                return false;
+            }
+            boolean ok = dao.updatePassword(userId, newHash, conn);
+            System.out.println(ok ? "Password changed." : "Failed to change password.");
+            return ok;
+        } catch (SQLException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * @return true or false based on successful logout
