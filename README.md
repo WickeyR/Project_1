@@ -1,89 +1,83 @@
-# Bank Management System – OOP Project - NICHOLAS PEREZ | Ricky Franco
-
-## 1. Project Overview
-
-### Title:
-**Bank Management System**
-
-### Description:
-This project aims to develop a **secure and efficient banking application** using **Object-Oriented Programming (OOP)** principles. The system will allow users to **manage bank accounts, perform transactions, and generate reports** while ensuring data integrity, security, and scalability.
-
-### Key Functionalities:
-- **model.User Management:** Secure authentication system with role-based access control (customers and bank staff).
-- **model.Account Handling:** Creation, updating, and deletion of different account types.
-- **model.Transaction Processing:** Real-time fund transfers, deposits, and withdrawals with validation.
-- **Reporting & Analytics:** model.Transaction history, balance inquiries, and statement generation.
+# **SuperBank – Console Banking Suite**
 
 ---
 
-## 2. Key Features
+## Team Members
+- **Ricky Franco** –   Back-end (domain model, DAO layer, business rules)
+- **Nicholas Perez**   – Full-stack Developer (CLI workflow, UI Design, README)
+---
 
-### 1. model.User Authentication
-- Secure login system using **password hashing (e.g., bcrypt, SHA-256)**.
-- **Role-based access control**: Different functionalities for customers and bank employees.
-- **Session management**: Automatic logout after inactivity for security.
+## Project Description
+**SuperBank** is a console-based banking application that demonstrates clean **Object-Oriented Programming (OOP)**, layered architecture, and basic security practices in Java.
 
-### 2. Core Functionalities
-- **model.Account Management**
-  - Customers can create, update, or delete **Checking or Savings accounts**.
-  - Bank staff can view and manage customer accounts.
-- **model.Transaction Processing**
-  - **Deposits, withdrawals, and fund transfers** with real-time updates.
-  - **model.Transaction logs** to track and validate account activities.
-  - **Overdraft protection** for specific account types.
-- **Reporting & Analysis**
-  - Customers can generate **account statements** and view transaction histories.
-  - Bank employees can access **user statistics and financial summaries**.
+Two user roles interact with the system:
 
-### 3. Data Processing & Management
-- **Database:** Uses **MySQL/PostgreSQL** to store structured financial data.
-- **CRUD operations** for managing user and transaction records.
-- **Security Measures:**
-  - **Encryption** for sensitive data (e.g., AES for passwords).
-  - **Data validation** to prevent unauthorized access or fraud.
+- **Customers** – open checking/savings accounts, move money, view history, manage passwords.
+- **Bank staff (ADMIN)** – list users, accounts and transactions, and promote other admins.
+
+The code is organized in four layers:
+
+| Layer       | Package(s)      | Responsibility                                                   |
+|-------------|-----------------|------------------------------------------------------------------|
+| **Model**   | `model.*`       | Immutable domain objects (`User`, `Account`, `Transaction`)      |
+| **DAO**     | `DAO.*`         | Plain-SQL CRUD against an embedded H2 database                   |
+| **Service** | `service.*`     | Business logic: hashing, transfers, account closure              |
+| **UI**      | `ui.*`          | Text-based interaction (`RegistrationUI`)                        |
 
 ---
 
-## 3. OOP Principles Applied
+## How to Run
 
-### 1. Encapsulation
-- **Sensitive account data** (e.g., balance, transactions) is private.
-- Access is controlled via **getter/setter methods**, preventing direct modification.
+1. **Prerequisites**
+  - **JDK 21** (or ≥ 17)
+  - Any IDE (IntelliJ IDEA / Eclipse / VS Code) or plain JDK tools
+  - `lib/h2-2.2.224.jar` (already committed) – _no external database needed_
 
-### 2. Inheritance
-- **Base Class:** `BankAccount` (common attributes and methods).
-- **Derived Classes:**
-  - `model.SavingsAccount` (interest rate applied).
-  - `CheckingAccount` (overdraft protection enabled).
+2. **Clone & Build**
+  
+- Clone the repository from the Github page
 
-### 3. Polymorphism
-- **model.Transaction methods** behave differently based on account type.
-- **Overriding example:** `calculateInterest()` behaves differently in `model.SavingsAccount` than in `CheckingAccount`.
+3. **Compile**
 
-### 4. Abstraction
-- **Interface `TransactionInterface`** defines `deposit()`, `withdraw()`, and `transfer()`.
-- Concrete classes (`CheckingAccount`, `model.SavingsAccount`) implement these methods.
+- Compile and run the program in InteliJ
 
----
 
-## 4. Technologies & Tools
+4. **Create and account**
+- Create an account, or multiple and perform various functions
 
-### 1. Programming Language:
-- **Java** (main language for OOP implementation).
 
-### 2. GUI Framework (If applicable):
-- **JavaFX** or **Swing** for designing a user-friendly interface.
+## Features Implemented
 
-### 3. Database Management:
-- **MySQL/PostgreSQL** for structured financial data storage.
+- **Secure Authentication**
+  - SHA-256 password hashing; roles **CUSTOMER** and **ADMIN**
+  - Auto-bootstrapped `admin/admin`
+- **Account Management**
+  - Checking auto-created at sign-up
+  - Open extra checking or one savings (4 % APR placeholder)
+  - Close account (balance must be zero)
+- **Banking Operations**
+  - Deposit / Withdraw
+  - Transfer between customer’s accounts
+  - Send money to another user’s checking
+  - Full transaction logging
+- **Admin Console**
+  - List every user, account, and transaction
+  - Promote new admins from the UI
+- **OOP Principles**
+  - Encapsulation – private fields, public getters/setters
+  - Inheritance – `SavingsAccount` vs. `CheckingAccount`
 
-### 4. Security & Authentication:
-- **Password hashing** with bcrypt or SHA-256.
-- **Role-based access control** to limit unauthorized access.
+## Future Work
 
-### 5. Development Tools:
-- **IDE:** IntelliJ IDEA, Eclipse
-- **Version Control:** Git/GitHub for source code management
+- Cannot create a new admin account
+- Monthly interest scheduler (background job)
+- GUI (JavaFX)
+- Enhanced validation & exception handling
+- Concurrency control (locking) for transfers
 
----
+## Known Issues / Limitations
 
+- Single-threaded – one session at a time
+- No encryption-at-rest for H2 file
+- Admin listings lack pagination
+- No overdraft protection yet
