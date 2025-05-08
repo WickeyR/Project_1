@@ -63,11 +63,20 @@ public class RegistrationUI {
         while (true) {
             System.out.print("Enter your password: ");
             String password = SC.nextLine();
+
             if (AuthenticationService.login(username, password)) {
                 System.out.println("Login Successful");
                 try {
                     User currentUser = UserDAO.getUserByUsername(username);
-                    userScreenLoop(currentUser);
+
+                    /* ------ route based on role ------ */
+                    if (currentUser.isAdmin()) {
+                        adminScreenLoop(currentUser);   // <-- ADMIN MENU
+                    } else {
+                        userScreenLoop(currentUser);    // <-- REGULAR USER MENU
+                    }
+                    /* --------------------------------- */
+
                     break;
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -78,6 +87,7 @@ public class RegistrationUI {
             }
         }
     }
+
 
     private static void createUser() {
         System.out.println("**********************************");
