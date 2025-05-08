@@ -34,6 +34,14 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Lets the user potentially update their password
+     * @param userId the user id of the account
+     * @param newPasswordHash the new password
+     * @param conn the connectoin to the database
+     * @return true or false based on success
+     * @throws SQLException ensures proper conn3ection
+     */
     public boolean updatePassword(int userId,
                                   String newPasswordHash,
                                   Connection conn) throws SQLException {
@@ -45,6 +53,12 @@ public class UserDAO {
         }
     }
 
+    /**
+     * returns a user object
+     * @param id the id to fetch the user of
+     * @return a user object
+     * @throws SQLException
+     */
     public static User getUserById(int id) throws SQLException {
         String sql = """
       SELECT ID, first_name, last_name, username, password_hash, role
@@ -97,13 +111,7 @@ public class UserDAO {
     }
 
 
-    /**
-     * @param user The user to update
-     * @param connection The sql connection
-     */
-    public void updateUser(User user, Connection connection){
 
-    }
 
     /**
      * @param username The username to search the database for
@@ -129,29 +137,4 @@ public class UserDAO {
         return false;
     }
 
-
-//    /**
-//     * @param email the email to check the database for
-//     * @param connection the sql connection
-//     * @return true or false based on the result
-//     * Checks to see if the email already exists in the database
-//     */
-//    public boolean doesEmailExist(String email, Connection connection){
-//        // sql prompt to check if user email exists
-//        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
-//
-//        try(PreparedStatement stmt = connection.prepareStatement(sql)){
-//            stmt.setString(1, email);
-//            try(ResultSet rs = stmt.executeQuery()) {
-//                if(rs.next()){
-//                    // If count > 0, username is already in database
-//                    int count = rs.getInt(1);
-//                    return count > 0;
-//                }
-//            }
-//        }catch (SQLException e){
-//            e.printStackTrace();
-//        }
-//        return false;
-//    }
 }

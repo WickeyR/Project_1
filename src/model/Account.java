@@ -192,17 +192,7 @@ public abstract class Account {
         /**
          * @param newInterestRate sets a new interest rate
          */
-        public void setInterestRate(double newInterestRate) {
-            this.interestRate = newInterestRate;
-        }
 
-        /**
-         * calculate the interest to be added to the account
-         */
-        public void applyInterest() {
-            if (interestRate > 0) {
-                balance += balance * interestRate;
-            }
         }
     }
-}
+

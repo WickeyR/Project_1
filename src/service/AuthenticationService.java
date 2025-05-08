@@ -31,18 +31,20 @@ public class AuthenticationService {
     public boolean changePassword(int userId, String oldPassword, String newPassword) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             UserDAO dao = new UserDAO();
-            // 1) fetch the current user record
+
+
+            //Grab the users account
             User u = UserDAO.getUserById(userId);
             if (u == null) return false;
 
-            // 2) verify old password
+            // ensure the old password matches
             String oldHash = encryptPassword(oldPassword);
             if (!oldHash.equals(u.getPasswordHash())) {
                 System.out.println("Current password incorrect.");
                 return false;
             }
 
-            // 3) hash & update
+            // ahsh current password and update
             String newHash = encryptPassword(newPassword);
             if (newHash.equals(oldHash)) {
                 System.out.println("New password must differ from old password.");
@@ -57,16 +59,7 @@ public class AuthenticationService {
         }
     }
 
-    /**
-     * @return true or false based on successful logout
-     */
-    public boolean Logout(){
-        if(true){
-            return true;
-        }
-        //If login is not successful
-        return false;
-    }
+
 
 
     /**
@@ -119,6 +112,13 @@ public class AuthenticationService {
         }
 
     }
+
+    /**
+     * encryps the password using a basic algorithm
+     * @param password The string password before hashing
+     * @return the new string of the password post encryption
+     * @throws NoSuchAlgorithmException catches the algorithm not existing
+     */
     public static String encryptPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));

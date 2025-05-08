@@ -45,36 +45,6 @@ public class User {
     public String getRole() { return role; }
     public boolean isAdmin() { return "ADMIN".equals(role); }
 
-    /**
-     * @param newUsername the potential new username
-     * @return true or false based on the result
-     * setUsername: Allows the user to potentially change their username
-     */
-    public boolean setUsername(String newUsername){
-        if(DoesUsernameExist(username)){
-            this.username = username;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param newPassword The potential new password for the user
-     * @return True or false based on the result
-     * setPassword: A setter method for the user to potentially change their password
-     */
-    public boolean setPassword(String newPassword){
-        if(!this.username.equals(HashPassword(newPassword))) {
-            this.passwordHash = HashPassword(newPassword);
-
-            //Store the new password in the database
-
-            return true;
-        }
-        return false;
-    }
-
-
 
     /**
      * @return return users username
@@ -104,30 +74,6 @@ public class User {
 
 
 
-
-
-    //------------- Other methods---------------------
-
-
-    /**
-     * @param username the username to be checked
-     * @return true or false based on a result of database
-     * DoesUsernameExist: Checks database to check if username exists or not
-     */
-    public static boolean DoesUsernameExist(String username){
-        return false;
-    }
-
-
-    /***
-     *
-     * @param passwordHash the password to be hashed
-     * @return a fully hashed password
-     * HashPassword: Perform a hash algorithm to encrypt the user's password
-     */
-    private static String HashPassword(String passwordHash){
-        return "";
-    }
 
 
 }

@@ -9,7 +9,6 @@ import util.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class AccountService {
 
@@ -36,33 +35,33 @@ public class AccountService {
             AccountDAO acctDao    = new AccountDAO();
             TransactionDAO txDao  = new TransactionDAO();
 
-            // 1) look up both users
+            // Look up both users of the transfer
             User sender    = userDao.getUserByUsername(fromUsername);
             User recipient = userDao.getUserByUsername(toUsername);
             if (sender == null || recipient == null) {
                 throw new SQLException("Sender or recipient not found");
             }
 
-            // 2) find checking account IDs
+            //Grab both sender and receiver id
             Integer senderChk    = acctDao.getCheckingIdForUser(sender.getUserId(), conn);
             Integer recipientChk = acctDao.getCheckingIdForUser(recipient.getUserId(), conn);
             if (senderChk == null || recipientChk == null) {
                 throw new SQLException("Missing checking account");
             }
 
-            // 3) withdraw from sender
+            //Take money out of the senders account
             if (!acctDao.withdraw(conn, senderChk, amount)) {
                 conn.rollback();
                 return false; // insufficient funds
             }
 
-            // 4) deposit into recipient
+            //Deposit that money into the receivers account
             if (!acctDao.deposit(conn, recipientChk, amount)) {
                 conn.rollback();
                 return false;
             }
 
-            // 5) log both legs
+            //Log the transactions for both users
             txDao.logTransaction(conn,
                     senderChk,
                     "TRANSFER",
@@ -119,8 +118,14 @@ public class AccountService {
     }
 
 
-
-    /** returns true if a savings is successfully opened and funded */
+    /**
+     * Allows uer to open savings account
+     * @param userId the user to open the account for
+     * @param checkingAcctId The checking account to open from
+     * @param initialDeposit the initial deposit into the savings account
+     * @return true or false based on success
+     * @throws SQLException ensure proper sql connection
+     */
     public boolean openSavingsFromChecking(int userId,
                                            int checkingAcctId,
                                            double initialDeposit) throws SQLException {
@@ -129,16 +134,16 @@ public class AccountService {
             AccountDAO acctDao = new AccountDAO();
             TransactionDAO txDao = new TransactionDAO();
 
-            // 1) create zero-balance savings
+            //Create a savings with 0 balance
             Account.SavingsAccount sav =
                     new Account.SavingsAccount(userId, 0.0, DEFAULT_SAVINGS_RATE);
             if (!acctDao.createAccount(sav, conn)) { conn.rollback(); return false; }
 
-            // 2) move funds
+            //Transfer funds from checking to savings
             if (!acctDao.withdraw(conn, checkingAcctId, initialDeposit)) { conn.rollback(); return false; }
             if (!acctDao.deposit (conn, sav.getACCOUNT_NUMBER(), initialDeposit)) { conn.rollback(); return false; }
 
-            // 3) log both legs  (time_stamp column filled by DB)
+            // log both of the transactions
             txDao.logTransaction(conn, checkingAcctId,          // FROM
                     "WITHDRAWAL", initialDeposit,
                     "Open savings", "COMPLETED");
@@ -155,6 +160,12 @@ public class AccountService {
     }
 
 
+    /**
+     * Open a default checking account with 0 balance
+     * @param userId The user id to make the account for
+     * @param connection the sql connection
+     * @throws SQLException ensure proper connection
+     */
     public void openDefaultChecking(int userId, Connection connection) throws SQLException {
         Account.CheckingAccount checkingAccount = new Account.CheckingAccount(userId, 0.00);
         new AccountDAO().createAccount(checkingAccount, connection);
