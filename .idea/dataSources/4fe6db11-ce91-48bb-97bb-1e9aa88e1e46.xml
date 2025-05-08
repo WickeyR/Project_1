@@ -167,17 +167,17 @@
     <collation id="160" parent="2" name="VIETNAMESE_VIETNAM"/>
     <role id="161" parent="2" name="PUBLIC"/>
     <schema id="162" parent="2" name="BANK">
-      <LastIntrospectionLocalTimestamp>2025-05-08.19:43:05</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-05-08.21:19:39</LastIntrospectionLocalTimestamp>
     </schema>
     <schema id="163" parent="2" name="INFORMATION_SCHEMA">
-      <LastIntrospectionLocalTimestamp>2025-05-08.19:39:05</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-05-08.21:19:20</LastIntrospectionLocalTimestamp>
     </schema>
     <schema id="164" parent="2" name="PUBLIC">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2025-05-08.19:39:05</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-05-08.21:19:20</LastIntrospectionLocalTimestamp>
     </schema>
     <schema id="165" parent="2" name="bank">
-      <LastIntrospectionLocalTimestamp>2025-05-08.19:39:05</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-05-08.21:19:20</LastIntrospectionLocalTimestamp>
     </schema>
     <user id="166" parent="2" name="SA">
       <Admin>1</Admin>
@@ -2194,7 +2194,7 @@
       <Position>1</Position>
       <StoredType>INTEGER|0s</StoredType>
       <SequenceInline>1</SequenceInline>
-      <SequenceSequenceIdentity>1(1)</SequenceSequenceIdentity>
+      <SequenceSequenceIdentity>1(2)</SequenceSequenceIdentity>
       <SequenceStartValue>1</SequenceStartValue>
       <SequenceStoredType>INTEGER|0s</SequenceStoredType>
     </column>
@@ -2306,7 +2306,7 @@
       <Position>1</Position>
       <StoredType>INTEGER|0s</StoredType>
       <SequenceInline>1</SequenceInline>
-      <SequenceSequenceIdentity>1(1)</SequenceSequenceIdentity>
+      <SequenceSequenceIdentity>1(2)</SequenceSequenceIdentity>
       <SequenceStartValue>1</SequenceStartValue>
       <SequenceStoredType>INTEGER|0s</SequenceStoredType>
     </column>
@@ -2326,26 +2326,32 @@
       <Position>5</Position>
       <StoredType>CHARACTER VARYING(100)|0s</StoredType>
     </column>
-    <index id="716" parent="207" name="PRIMARY_KEY_4">
+    <column id="716" parent="207" name="ROLE">
+      <DefaultExpression>&apos;USER&apos;</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>ENUM(&apos;USER&apos;, &apos;ADMIN&apos;)|0e</StoredType>
+    </column>
+    <index id="717" parent="207" name="PRIMARY_KEY_B">
       <ColNames>ID</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="717" parent="207" name="CONSTRAINT_INDEX_4">
+    <index id="718" parent="207" name="CONSTRAINT_4D_INDEX_B">
       <ColNames>USERNAME</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="718" parent="207" name="CONSTRAINT_4">
+    <key id="719" parent="207" name="CONSTRAINT_4">
       <ColNames>ID</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
     </key>
-    <key id="719" parent="207" name="CONSTRAINT_4D">
+    <key id="720" parent="207" name="CONSTRAINT_4D">
       <ColNames>USERNAME</ColNames>
       <NameSurrogate>1</NameSurrogate>
     </key>
-    <column id="720" parent="208" name="account_id">
+    <column id="721" parent="208" name="account_id">
       <ColumnKind>generated-stored</ColumnKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -2355,26 +2361,26 @@
       <SequenceStartValue>1</SequenceStartValue>
       <SequenceStoredType>INTEGER|0s</SequenceStoredType>
     </column>
-    <column id="721" parent="208" name="user_id">
+    <column id="722" parent="208" name="user_id">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="722" parent="208" name="account_type">
+    <column id="723" parent="208" name="account_type">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>ENUM(&apos;DEPOSIT&apos;, &apos;CHECKING&apos;, &apos;WITHDRAWAL&apos;, &apos;SAVING&apos;, &apos;TRANSFER&apos;)|0e</StoredType>
     </column>
-    <column id="723" parent="208" name="balance">
+    <column id="724" parent="208" name="balance">
       <DefaultExpression>0</DefaultExpression>
       <Position>4</Position>
       <StoredType>DOUBLE PRECISION|0s</StoredType>
     </column>
-    <column id="724" parent="208" name="interest_rate">
+    <column id="725" parent="208" name="interest_rate">
       <Position>5</Position>
       <StoredType>DOUBLE PRECISION|0s</StoredType>
     </column>
-    <foreign-key id="725" parent="208" name="CONSTRAINT_B9">
+    <foreign-key id="726" parent="208" name="CONSTRAINT_B9">
       <ColNames>user_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <OnDelete>restrict</OnDelete>
@@ -2382,21 +2388,21 @@
       <RefKeyName>CONSTRAINT_6</RefKeyName>
       <RefTableName>users</RefTableName>
     </foreign-key>
-    <index id="726" parent="208" name="PRIMARY_KEY_B">
+    <index id="727" parent="208" name="PRIMARY_KEY_B">
       <ColNames>account_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="727" parent="208" name="CONSTRAINT_INDEX_B">
+    <index id="728" parent="208" name="CONSTRAINT_INDEX_B">
       <ColNames>user_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
     </index>
-    <key id="728" parent="208" name="CONSTRAINT_B">
+    <key id="729" parent="208" name="CONSTRAINT_B">
       <ColNames>account_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
     </key>
-    <column id="729" parent="209" name="transaction_id">
+    <column id="730" parent="209" name="transaction_id">
       <ColumnKind>generated-stored</ColumnKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -2406,36 +2412,36 @@
       <SequenceStartValue>1</SequenceStartValue>
       <SequenceStoredType>INTEGER|0s</SequenceStoredType>
     </column>
-    <column id="730" parent="209" name="account_id">
+    <column id="731" parent="209" name="account_id">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>INTEGER|0s</StoredType>
     </column>
-    <column id="731" parent="209" name="transaction_type">
+    <column id="732" parent="209" name="transaction_type">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>ENUM(&apos;DEPOSIT&apos;, &apos;CHECKING&apos;, &apos;WITHDRAWAL&apos;, &apos;SAVING&apos;, &apos;TRANSFER&apos;)|0e</StoredType>
     </column>
-    <column id="732" parent="209" name="amount">
+    <column id="733" parent="209" name="amount">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>DOUBLE PRECISION|0s</StoredType>
     </column>
-    <column id="733" parent="209" name="time_stamp">
+    <column id="734" parent="209" name="time_stamp">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
       <Position>5</Position>
       <StoredType>TIMESTAMP|0s</StoredType>
     </column>
-    <column id="734" parent="209" name="description">
+    <column id="735" parent="209" name="description">
       <Position>6</Position>
       <StoredType>CHARACTER VARYING(255)|0s</StoredType>
     </column>
-    <column id="735" parent="209" name="status">
+    <column id="736" parent="209" name="status">
       <DefaultExpression>&apos;COMPLETED&apos;</DefaultExpression>
       <Position>7</Position>
       <StoredType>ENUM(&apos;COMPLETED&apos;, &apos;FAILED&apos;, &apos;PENDING&apos;)|0e</StoredType>
     </column>
-    <foreign-key id="736" parent="209" name="CONSTRAINT_74">
+    <foreign-key id="737" parent="209" name="CONSTRAINT_74">
       <ColNames>account_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <OnDelete>restrict</OnDelete>
@@ -2443,21 +2449,21 @@
       <RefKeyName>CONSTRAINT_B</RefKeyName>
       <RefTableName>account</RefTableName>
     </foreign-key>
-    <index id="737" parent="209" name="PRIMARY_KEY_7">
+    <index id="738" parent="209" name="PRIMARY_KEY_7">
       <ColNames>transaction_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="738" parent="209" name="CONSTRAINT_INDEX_7">
+    <index id="739" parent="209" name="CONSTRAINT_INDEX_7">
       <ColNames>account_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
     </index>
-    <key id="739" parent="209" name="CONSTRAINT_7">
+    <key id="740" parent="209" name="CONSTRAINT_7">
       <ColNames>transaction_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
     </key>
-    <column id="740" parent="210" name="id">
+    <column id="741" parent="210" name="id">
       <ColumnKind>generated-stored</ColumnKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -2467,38 +2473,38 @@
       <SequenceStartValue>1</SequenceStartValue>
       <SequenceStoredType>INTEGER|0s</SequenceStoredType>
     </column>
-    <column id="741" parent="210" name="first_name">
+    <column id="742" parent="210" name="first_name">
       <Position>2</Position>
       <StoredType>CHARACTER VARYING(100)|0s</StoredType>
     </column>
-    <column id="742" parent="210" name="last_name">
+    <column id="743" parent="210" name="last_name">
       <Position>3</Position>
       <StoredType>CHARACTER VARYING(100)|0s</StoredType>
     </column>
-    <column id="743" parent="210" name="password_hash">
+    <column id="744" parent="210" name="password_hash">
       <Position>4</Position>
       <StoredType>CHARACTER VARYING(256)|0s</StoredType>
     </column>
-    <column id="744" parent="210" name="username">
+    <column id="745" parent="210" name="username">
       <Position>5</Position>
       <StoredType>CHARACTER VARYING(100)|0s</StoredType>
     </column>
-    <index id="745" parent="210" name="PRIMARY_KEY_6">
+    <index id="746" parent="210" name="PRIMARY_KEY_6">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="746" parent="210" name="CONSTRAINT_INDEX_6">
+    <index id="747" parent="210" name="CONSTRAINT_INDEX_6">
       <ColNames>username</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="747" parent="210" name="CONSTRAINT_6">
+    <key id="748" parent="210" name="CONSTRAINT_6">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
     </key>
-    <key id="748" parent="210" name="CONSTRAINT_6A">
+    <key id="749" parent="210" name="CONSTRAINT_6A">
       <ColNames>username</ColNames>
       <NameSurrogate>1</NameSurrogate>
     </key>

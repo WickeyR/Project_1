@@ -10,8 +10,8 @@ import service.AccountService;
 import service.AuthenticationService;
 import util.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -186,6 +186,147 @@ public class RegistrationUI {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+
+
+
+    private static void adminScreenLoop(User admin) {
+        while (true) {
+            System.out.println("\n\n===== ADMIN CONSOLE =====");
+            System.out.println("1) List all users");
+            System.out.println("2) List all accounts");
+            System.out.println("3) List all transactions");
+            System.out.println("4) Create new ADMIN");
+            System.out.println("5) Logout");
+            System.out.print("Choice: ");
+
+            String c = SC.nextLine().trim();
+            switch (c) {
+                case "1" -> listAllUsers();
+                case "2" -> listAllAccounts();
+                case "3" -> listAllTransactions();
+                case "4" -> createAdminFlow();
+                case "5" -> { return; }
+                default  -> System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private static void listAllUsers() {
+        System.out.println("\n-- All Users --");
+        String sql = "SELECT ID, first_name, last_name, username, role FROM users";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                System.out.printf(
+                        "%d: %s %s (username=%s, role=%s)%n",
+                        rs.getInt("ID"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("username"),
+                        rs.getString("role")
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("Error listing users: " + e.getMessage());
+        }
+    }
+
+    private static void listAllAccounts() {
+        System.out.println("\n-- All Accounts --");
+        String sql = """
+          SELECT account_id, user_id, account_type, balance, interest_rate
+            FROM account
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                System.out.printf(
+                        "Acct %d | User %d | %-8s | $%,.2f | rate=%s%n",
+                        rs.getInt("account_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("account_type"),
+                        rs.getDouble("balance"),
+                        rs.getObject("interest_rate") == null
+                                ? "n/a"
+                                : String.format("%.2f%%", rs.getDouble("interest_rate")*100)
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("Error listing accounts: " + e.getMessage());
+        }
+    }
+
+    private static void listAllTransactions() {
+        System.out.println("\n-- All Transactions --");
+        String sql = """
+          SELECT transaction_id, account_id, transaction_type,
+                 amount, time_stamp, description, status
+            FROM transactions
+           ORDER BY time_stamp DESC
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                System.out.printf(
+                        "%d | acct %d | %-10s | $%,.2f | %s | %s | %s%n",
+                        rs.getInt("transaction_id"),
+                        rs.getInt("account_id"),
+                        rs.getString("transaction_type"),
+                        rs.getDouble("amount"),
+                        rs.getTimestamp("time_stamp"),
+                        rs.getString("description"),
+                        rs.getString("status")
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("Error listing transactions: " + e.getMessage());
+        }
+    }
+
+    private static void createAdminFlow() {
+        System.out.println("\n-- Create New ADMIN --");
+        System.out.print("First Name: ");
+        String fn = SC.nextLine().trim();
+        System.out.print("Last Name: ");
+        String ln = SC.nextLine().trim();
+        System.out.print("Username: ");
+        String un = SC.nextLine().trim();
+        System.out.print("Password: ");
+        String pw = SC.nextLine();
+
+        if (fn.isEmpty() || ln.isEmpty() || un.isEmpty() || pw.isEmpty()) {
+            System.out.println("All fields are required.");
+            return;
+        }
+
+        try {
+            String hashed = AuthenticationService.encryptPassword(pw);
+            String sql = """
+              INSERT INTO users
+                (first_name, last_name, username, password_hash, role)
+              VALUES (?, ?, ?, ?, 'ADMIN')
+            """;
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, fn);
+                ps.setString(2, ln);
+                ps.setString(3, un);
+                ps.setString(4, hashed);
+                int rows = ps.executeUpdate();
+                System.out.println(rows == 1
+                        ? "Admin created."
+                        : "Failed to create admin."
+                );
+            }
+        } catch (SQLException | NoSuchAlgorithmException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
     private static void viewBalances(User user) {
         try {
             AccountDAO dao = new AccountDAO();
@@ -204,7 +345,8 @@ public class RegistrationUI {
             System.out.println("1. Open Savings Account");
             System.out.println("2. Close Account");
             System.out.println("3. Change Password");
-            System.out.println("4. Back");
+            System.out.println("4. Open Checking Account");
+            System.out.println("5. Back");
             System.out.print("Enter your choice: ");
 
             String c = SC.nextLine().trim();
@@ -212,14 +354,55 @@ public class RegistrationUI {
                 case "1" -> openSavingsFlow(user);
                 case "2" -> closeAccountFlow(user);
                 case "3" -> changePasswordFlow(user);
-                case "4" -> {
-                    // back to your main account menu
+                case "4" -> openCheckingFlow(user);
+                case "5" -> {
                     return;
                 }
                 default -> System.out.println("Invalid choice.");
             }
         }
     }
+    private static void openCheckingFlow(User user) {
+        System.out.println("---- Open New Checking Account ----");
+        System.out.print("Initial deposit amount (or 0): ");
+        double amt;
+        try {
+            amt = Double.parseDouble(SC.nextLine());
+            if (amt < 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount.");
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            // 1) create the new checking account
+            AccountService svc = new AccountService();
+            svc.openDefaultChecking(user.getUserId(), conn);
+            // 2) if they want to seed it, deposit from an existing checking
+            if (amt > 0) {
+                AccountDAO acctDao = new AccountDAO();
+                Integer newId = acctDao.getCheckingIdForUser(user.getUserId(), conn);
+                if (newId == null) {
+                    System.out.println("Could not find newly created checking account.");
+                } else {
+                    // assume they use their *first* checking to fund the new one
+                    Integer srcId = acctDao.getCheckingIdForUser(user.getUserId(), conn);
+                    if (srcId.equals(newId)) {
+                        System.out.println("No other checking to fund from. Please deposit manually.");
+                    } else if (acctDao.withdraw(conn, srcId, amt) &&
+                            acctDao.deposit(conn, newId, amt)) {
+                        System.out.println("Deposited $" + amt + " into account ID " + newId);
+                    } else {
+                        System.out.println("Could not transfer funds automatically. Please deposit manually.");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error opening checking: " + e.getMessage());
+        }
+    }
+
+
     private static void changePasswordFlow(User user) {
         System.out.println("---- Change Password ----");
         System.out.print("Enter current password: ");

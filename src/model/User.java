@@ -12,7 +12,7 @@ public class User {
      final String LAST_NAME;
     private String username;
     private String passwordHash;
-
+    private final String role;
 
     /**
      * @param firstName    first name of the user
@@ -21,22 +21,17 @@ public class User {
      * @param passwordHash users password to login
      */
     public User(String firstName, String lastName, String username, String passwordHash) {
-
-        //Initialize user information
-        this.userId       = null;
-        this.FIRST_NAME = firstName;
-        this.LAST_NAME = lastName;
-
-        this.username = username;
-        this.passwordHash = passwordHash;
+        this(null, firstName, lastName, username, passwordHash, "USER");
     }
 
-    public User(int userId, String firstName, String lastName, String username, String passwordHash) {
+    public User(Integer userId, String firstName, String lastName,
+                String username, String passwordHash, String role) {
         this.userId       = userId;
         this.FIRST_NAME   = firstName;
         this.LAST_NAME    = lastName;
         this.username     = username;
         this.passwordHash = passwordHash;
+        this.role         = role;
     }
 
     public void setUserId(int id) {
@@ -46,75 +41,9 @@ public class User {
     public int getUserId() {
         return userId;
     }
-    //------------------ SETTER METHODS --------------//
 
-//    /**
-//     * @param newEmail The new email address
-//     * @return true or false based on success
-//     * setEmail: Allows user to potentially set new email
-//     */
-//    public boolean setEmail(String newEmail){
-//        boolean isValid = true;
-//        //Check if email is different from current email
-//
-//        //Check to make sure email not already in the database
-//
-//        if(isValid){
-//            this.email = newEmail;
-//
-//            //Update the email in the SQL database
-//
-//            //Email change success
-//            return true;
-//        }else{
-//
-//            //Email change failure
-//            return false;
-//        }
-//    }
-
-    /**
-     * @param newPhoneNumber the new potential phone number for the user
-     * @return true or false based on success
-     * setPhoneNumber: Allows user to potentially set new phone number
-     */
-//    public boolean setPhoneNumber(int newPhoneNumber){
-//        Boolean isValid = true;
-//        //Check if the phone number is different from the current phone number
-//
-//        //Check to make sure phone number not already in the database
-//
-//        if(isValid){
-//            this.phoneNumber = newPhoneNumber;
-//
-//            //Update the phone number in the SQL database
-//
-//            //phone number change success
-//            return true;
-//        }else{
-//
-//            //phone number change failure
-//            return false;
-//        }
-//    }
-
-
-    /**
-     * @param newAddress The potential new address
-     * @return true or false based on success
-     * setAddress: Allows user to potentially change their address
-     */
-//    public boolean setAddress(String newAddress){
-//        //Check if newAddress is distinct from current
-//        if(!Objects.equals(getAddress(), newAddress)){
-//            this.address = newAddress;
-//
-//            //Return Success
-//            return true;
-//        }
-//        //newAddress is identical to current
-//        return false;
-//    }
+    public String getRole() { return role; }
+    public boolean isAdmin() { return "ADMIN".equals(role); }
 
     /**
      * @param newUsername the potential new username
@@ -145,32 +74,7 @@ public class User {
         return false;
     }
 
-    //------------------ GETTER METHODS --------------//
 
-//    /**
-//     * @return the email address of the user
-//     * getEmail: Returns the users email
-//     */
-//    public String getEmail(){
-//        return this.email;
-//    }
-//
-//    /**
-//     * @return users phone number
-//     * getPhoneNumber: Getter to return the number of the user
-//     */
-//    public int getPhoneNumber(){
-//        return this.phoneNumber;
-//    }
-
-
-//    /**
-//     * @return users' address
-//     * getAddress: Getter method to return users' address
-//     */
-//    public String getAddress() {
-//        return address;
-//    }
 
     /**
      * @return return users username
@@ -225,8 +129,6 @@ public class User {
         return "";
     }
 
-//    public int getDATE_OF_BIRTH() {
-//        return DATE_OF_BIRTH;
-//    }
+
 }
 

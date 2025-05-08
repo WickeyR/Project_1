@@ -8,83 +8,66 @@ import java.sql.*;
 public class UserDAO {
 
 
-
-    /**
-     * Update the password hash for a user.
-     * @param userId   the user’s ID
-     * @param newHash  the new password hash
-     * @param conn     open Connection
-     * @return true if exactly one row was updated
-     */
-    public boolean updatePassword(int userId, String newHash, Connection conn) throws SQLException {
-        String sql = "UPDATE users SET password_hash = ? WHERE ID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, newHash);
-            ps.setInt(2, userId);
-            return ps.executeUpdate() == 1;
-        }
-    }
-
-    /**
-     * Fetch a user by numeric ID.
-     * @param userId the user’s ID
-     * @return User or null
-     */
-    public static User getUserById(int userId) throws SQLException {
-        String sql = """
-            SELECT ID, first_name, last_name, username, password_hash
-              FROM users
-             WHERE ID = ?
-        """;
-        try (Connection c = DatabaseConnection.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new User(
-                            rs.getInt("ID"),
-                            rs.getString("first_name"),
-                            rs.getString("last_name"),
-                            rs.getString("username"),
-                            rs.getString("password_hash")
-                    );
-                }
-            }
-        }
-        return null;
-    }
-
     /**
      * @param user The user to add to the database
      * @param connection The connection to the SQL database
      */
     public void createUser(User user, Connection connection) throws SQLException {
         String sql = """
-            INSERT INTO users (first_name, last_name, username, password_hash)
-            VALUES (?, ?, ?, ?)
-        """;
-
+    INSERT INTO users
+      (first_name, last_name, username, password_hash, role)
+    VALUES (?,?,?,?,?)
+  """;
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getFirstName());
             ps.setString(2, user.getLastName());
             ps.setString(3, user.getUsername());
             ps.setString(4, user.getPasswordHash());
-
+            ps.setString(5, user.getRole());            // ← new
             int affected = ps.executeUpdate();
-            if (affected == 0) {
+            if (affected == 0)
                 throw new SQLException("Creating user failed, no rows affected.");
-            }
-
-            // Grab the auto-generated user_id
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    user.setUserId(keys.getInt(1));
-                } else {
-                    throw new SQLException("Creating user failed, no ID obtained.");
-                }
+                if (keys.next()) user.setUserId(keys.getInt(1));
+                else throw new SQLException("Creating user failed, no ID obtained.");
             }
         }
     }
+
+    public boolean updatePassword(int userId,
+                                  String newPasswordHash,
+                                  Connection conn) throws SQLException {
+        String sql = "UPDATE users SET password_hash = ? WHERE ID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newPasswordHash);
+            ps.setInt   (2, userId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    public static User getUserById(int id) throws SQLException {
+        String sql = """
+      SELECT ID, first_name, last_name, username, password_hash, role
+        FROM users
+       WHERE ID = ?
+    """;
+        try (Connection c = DatabaseConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                return new User(
+                        rs.getInt   ("ID"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("username"),
+                        rs.getString("password_hash"),
+                        rs.getString("role")      // if you have a role column
+                );
+            }
+        }
+    }
+
 
     /**
      * @param username The username to grab the user from
@@ -92,30 +75,27 @@ public class UserDAO {
      */
     public static User getUserByUsername(String username) throws SQLException {
         String sql = """
-            SELECT ID, first_name, last_name, username, password_hash
-              FROM users
-             WHERE username = ?
-        """;
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
-
+    SELECT ID, first_name, last_name, username, password_hash, role
+      FROM users
+     WHERE username = ?
+  """;
+        try (Connection c = DatabaseConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    int    id    = rs.getInt("ID");
-                    String fn    = rs.getString("first_name");
-                    String ln    = rs.getString("last_name");
-                    String un    = rs.getString("username");
-                    String phash = rs.getString("password_hash");
-
-                    // Use the constructor that accepts userId
-                    return new User(id, fn, ln, un, phash);
-                }
+                if (!rs.next()) return null;
+                return new User(
+                        rs.getInt   ("ID"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("username"),
+                        rs.getString("password_hash"),
+                        rs.getString("role")         // ← new
+                );
             }
         }
-        return null;
     }
+
 
     /**
      * @param user The user to update
