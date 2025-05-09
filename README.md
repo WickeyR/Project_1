@@ -17,12 +17,12 @@ Two user roles interact with the system:
 
 The code is organized in four layers:
 
-| Layer       | Package(s)      | Responsibility                                                   |
-|-------------|-----------------|------------------------------------------------------------------|
-| **Model**   | `model.*`       | Immutable domain objects (`User`, `Account`, `Transaction`)      |
-| **DAO**     | `DAO.*`         | Plain-SQL CRUD against an embedded H2 database                   |
-| **Service** | `service.*`     | Business logic: hashing, transfers, account closure              |
-| **UI**      | `ui.*`          | Text-based interaction (`RegistrationUI`)                        |
+| Layer       | Package(s)      | Responsibility                                                           |
+|-------------|-----------------|--------------------------------------------------------------------------|
+| **Model**   | `model.*`       | Immutable domain objects (`User`, `Account`, `Transaction`)              |
+| **DAO**     | `DAO.*`         | Plain-SQL CRUD against an embedded H2 database                           |
+| **Service** | `service.*`     | Business logic: hashing, transfers, account closure                      |
+| **UI**      | `ui.*`          | Text-based interaction (`RegistrationUI`) and partial GUI (`BankingApp`) |
 
 ---
 
@@ -32,6 +32,7 @@ The code is organized in four layers:
   - **JDK 21** (or ≥ 17)
   - Any IDE (IntelliJ IDEA / Eclipse / VS Code) or plain JDK tools
   - `lib/h2-2.2.224.jar` (already committed) – _no external database needed_
+  - 'JavaFx 24 Jar' (code runs on newer versions of java and javafx however, edits will be made for compatability with the current code
 
 2. **Clone & Build**
   
@@ -66,12 +67,15 @@ The code is organized in four layers:
 - **OOP Principles**
   - Encapsulation – private fields, public getters/setters
   - Inheritance – `SavingsAccount` vs. `CheckingAccount`
-
+- **GUI (JavaFX and CSS Style)
+  - Clean and sleek UI design with login, account creation, and account summary functionality
+  - custom SVG icon and Colorful CSS styling
+  - preset with a loaded account Username: `monke`, Password: `password123`, Balance: 1000$
+  
 ## Future Work
 
 - Cannot create a new admin account
 - Monthly interest scheduler (background job)
-- GUI (JavaFX)
 - Enhanced validation & exception handling
 - Concurrency control (locking) for transfers
 
@@ -81,3 +85,4 @@ The code is organized in four layers:
 - No encryption-at-rest for H2 file
 - Admin listings lack pagination
 - No overdraft protection yet
+- Mismatch Versions for Java and Javafx prohibit functionality of the GUI where it is only fully functional on JavaJDK v.23+ with JavaFx v.24
