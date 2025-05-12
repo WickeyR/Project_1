@@ -69,7 +69,7 @@ public class AuthenticationService {
      * @param password password
      * @return return the user
      */
-    public User registerUser(String firstName, String lastName, String username, String password) {
+    public static User registerUser(String firstName, String lastName, String username, String password) {
 
         //Attempt to grab connection
         try (Connection connection = DatabaseConnection.getConnection()) {

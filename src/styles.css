@@ -89,6 +89,25 @@
     -fx-cursor: hand;
 }
 
+
+/* Make menu-button itself look like logout */
+.menu-button.logout-button {
+    /* inherits everything from .logout-button */
+}
+
+/* Style the menu items inside that dropdown */
+.context-menu .menu-item {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-padding: 8px 12px;
+}
+
+/* Hover on an item */
+.context-menu .menu-item:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+
 .action-button:hover {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
 }
