@@ -117,6 +117,8 @@ public class SecureBankApp extends Application {
         actions.getChildren().add(actionBox("↓", "Deposit",  "Add funds",   () -> depositFlow(accounts)));
         actions.getChildren().add(actionBox("↑", "Withdraw", "Withdraw",   () -> withdrawFlow(accounts)));
         actions.getChildren().add(actionBox("⇄", "Transfer", "Move money", () -> transferFlow(accounts)));
+        actions.getChildren().add(actionBox("✈", "Send Money", "To another user", this::sendMoneyFlow));
+
         content.getChildren().add(actions);
 
         // Recent transactions
@@ -169,6 +171,51 @@ public class SecureBankApp extends Application {
             }
         });
     }
+
+    /**
+     * Ask for a recipient username + amount, then call AccountService.transfer(...)
+     * and refresh the dashboard.
+     */
+    private void sendMoneyFlow() {
+        // 1) ask for recipient username
+        TextInputDialog userDlg = new TextInputDialog();
+        userDlg.setTitle("Send Money");
+        userDlg.setHeaderText("Enter recipient’s username");
+        userDlg.setContentText("Username:");
+        userDlg.showAndWait().ifPresent(recipient -> {
+            if (recipient.isBlank()) {
+                showAlert("Invalid", "Username cannot be empty.");
+                return;
+            }
+
+            // 2) ask for amount
+            amountDialog("Send Money", amt -> {
+                if (amt <= 0) {
+                    showAlert("Invalid", "Amount must be positive.");
+                    return;
+                }
+
+                // 3) perform transfer
+                try {
+                    boolean ok = acctSvc.transfer(
+                            currentUser.getUsername(),
+                            recipient.trim(),
+                            amt
+                    );
+                    showAlert(
+                            ok ? "Success" : "Failed",
+                            ok
+                                    ? String.format("Sent $%,.2f to %s", amt, recipient)
+                                    : "Transfer failed (insufficient funds or user not found)"
+                    );
+                    if (ok) showDashboard();
+                } catch (SQLException ex) {
+                    showAlert("Error", ex.getMessage());
+                }
+            });
+        });
+    }
+
 
     /* ───── transaction helper ───── */
 
@@ -311,7 +358,7 @@ public class SecureBankApp extends Application {
                       new MenuItem("Open Checking")   {{ setOnAction(e -> openCheckingFlow()); }}
                             );
 
-           // reuse the same styling as our logout button
+           // reuse the same styling as logout button
           opts.getStyleClass().add("logout-button");
 
                 Button out = new Button("Logout");

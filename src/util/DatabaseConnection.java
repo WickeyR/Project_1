@@ -10,7 +10,7 @@ import java.sql.Statement;
  */
 public class DatabaseConnection {
 
-    // File “bankdb.mv.db” will live in your working directory.
+
     private static final String JDBC_URL =
             "jdbc:h2:file:./bankdb;MODE=MySQL;AUTO_SERVER=TRUE";
     private static final String USER = "sa";
