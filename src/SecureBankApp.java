@@ -1,9 +1,3 @@
-package ui;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,38 +8,27 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
-import util.DatabaseConnection;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class BankingApp extends Application {
+public class SecureBankApp extends Application {
 
     private Stage primaryStage;
     private Scene loginScene;
     private Scene createAccountScene;
     private Scene dashboardScene;
 
-    private final Map<String, BankingApp.UserAccount> userAccounts = new HashMap<>();
-    private BankingApp.UserAccount currentUser;
+    // Mock database for user credentials
+    private final Map<String, UserAccount> userAccounts = new HashMap<>();
+    private UserAccount currentUser;
 
     public static void main(String[] args) {
         launch(args);
-        try {
-            Connection conn = DatabaseConnection.getConnection();
-            if (conn != null) {
-                System.out.println("Connection Established");
-                conn.close();
-            } else {
-                System.out.println("Connection Failed");
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
     }
 
+    @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
 
@@ -65,7 +48,7 @@ public class BankingApp extends Application {
 
     private void setupMockData() {
         // Add a test user
-        BankingApp.UserAccount testUser = new BankingApp.UserAccount("monke", "password");
+        UserAccount testUser = new UserAccount("monke", "password123");
         testUser.setAccountNumber("3430093770");
         testUser.setBalance(1000.00);
         userAccounts.put("monke", testUser);
@@ -221,7 +204,7 @@ public class BankingApp extends Application {
             }
 
             // Create new account
-            BankingApp.UserAccount newAccount = new BankingApp.UserAccount(username, password);
+            UserAccount newAccount = new UserAccount(username, password);
             newAccount.setAccountNumber(generateAccountNumber());
             newAccount.setBalance(1000.00); // Starting balance
             userAccounts.put(username, newAccount);
@@ -560,7 +543,7 @@ public class BankingApp extends Application {
 
     private boolean validateLogin(String username, String password) {
         if (userAccounts.containsKey(username)) {
-            BankingApp.UserAccount account = userAccounts.get(username);
+            UserAccount account = userAccounts.get(username);
             return account.getPassword().equals(password);
         }
         return false;
@@ -616,8 +599,4 @@ public class BankingApp extends Application {
         }
     }
 }
-
-
-
-
 
