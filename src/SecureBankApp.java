@@ -1,8 +1,8 @@
-
 import DAO.AccountDAO;
 import DAO.TransactionDAO;
 import DAO.UserDAO;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import model.Account;
 import model.Transaction;
 import model.User;
@@ -19,8 +20,7 @@ import service.AccountService;
 import service.AuthenticationService;
 import util.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -35,18 +35,25 @@ public class SecureBankApp extends Application {
     /* ───────── fields ───────── */
     private Stage primaryStage;
     private Scene loginScene, createScene, dashboardScene;
-    private User  currentUser;
+    private Scene adminAuthScene;
+    private User currentUser;
 
-    private final AccountDAO     acctDao = new AccountDAO();
-    private final TransactionDAO txDao   = new TransactionDAO();
+    private final AccountDAO acctDao = new AccountDAO();
+    private final TransactionDAO txDao = new TransactionDAO();
     private final AccountService acctSvc = new AccountService();
 
-    public static void main(String[] args) { launch(args); }
+    public static void main(String[] args) {
+        launch(args);
+    }
 
-    @Override public void start(Stage stage) {
+    @Override
+    public void start(Stage stage) {
         this.primaryStage = stage;
-        loginScene  = buildLoginScene();
+        loginScene = buildLoginScene();
         createScene = buildCreateScene();
+        loginScene = buildLoginScene();
+        createScene = buildCreateScene();
+        adminAuthScene = buildAdminAuthScene();
         primaryStage.setScene(loginScene);
         primaryStage.setTitle("SecureBank");
         primaryStage.getIcons().add(new Image(Objects.requireNonNull(
@@ -55,32 +62,220 @@ public class SecureBankApp extends Application {
     }
 
     /* ─────────── scenes ─────────── */
+    private enum Tab { LOGIN, CREATE, ADMIN }
+
+    private HBox buildTabBar(Tab active) {
+        HBox bar = new HBox();
+        bar.setAlignment(Pos.CENTER);
+        bar.setPrefWidth(600);
+
+        Button login = new Button("Log In");
+        Button create = new Button("Create Account");
+        Button admin  = new Button("Admin");
+
+        for (Button b : List.of(login, create, admin)) {
+            b.setPrefWidth(200);
+            b.getStyleClass().add("tab-button");
+        }
+        switch (active) {
+            case LOGIN  -> login.getStyleClass().add("active-tab");
+            case CREATE -> create.getStyleClass().add("active-tab");
+            case ADMIN  -> admin.getStyleClass().add("active-tab");
+        }
+
+        login.setOnAction(e -> primaryStage.setScene(loginScene));
+        create.setOnAction(e -> primaryStage.setScene(createScene));
+        admin.setOnAction(e -> primaryStage.setScene(adminAuthScene));
+
+        bar.getChildren().addAll(login, create, admin);
+        return bar;
+    }
+
+    private Scene buildAdminAuthScene() {
+        VBox main = new VBox(40);
+        main.setAlignment(Pos.TOP_CENTER);
+        main.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, "
+                + "#1a237e 0%, #3949ab 50%, #5c6bc0 100%);");
+        main.setPadding(new Insets(20));
+
+        VBox head = header();
+        head.setMaxWidth(600);
+        main.getChildren().add(head);
+
+        HBox tabs = buildTabBar(Tab.ADMIN);
+        tabs.setMaxWidth(400);
+        main.getChildren().add(tabs);
+
+        /* small white card with the two admin buttons */
+        VBox card = new VBox(15);
+        card.setAlignment(Pos.CENTER);
+        card.setMaxWidth(400);
+        card.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.95);"
+                        + "-fx-background-radius: 8px;"
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
+
+        Button adminLogin = new Button("Admin Log In");
+        adminLogin.setPrefWidth(Double.MAX_VALUE);
+        adminLogin.getStyleClass().add("primary-button");
+        adminLogin.setOnAction(e -> adminLoginFlow());
+
+        Button createAdmin = new Button("Create New Admin");
+        createAdmin.setPrefWidth(Double.MAX_VALUE);
+        createAdmin.getStyleClass().add("primary-button");
+        createAdmin.setOnAction(e -> createAdminDialog());
+
+        card.getChildren().addAll(adminLogin, createAdmin);
+        card.setPadding(new Insets(0));
+        VBox.setMargin(card, new Insets(0));
+        main.getChildren().add(card);
+
+        main.getChildren().add(footer());
+
+        Scene scene = new Scene(main, 1200, 900);
+        scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
+        return scene;
+    }
+    private void adminLoginFlow() {
+        Dialog<Pair<String, String>> dlg = new Dialog<>();
+        dlg.setTitle("Admin Log In");
+        dlg.setHeaderText("Enter admin credentials");
+        ButtonType ok = new ButtonType("Log In", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
+
+        GridPane g = new GridPane();
+        g.setHgap(10);
+        g.setVgap(10);
+        g.setPadding(new Insets(20));
+        TextField user = new TextField();
+        user.setPromptText("Username");
+        PasswordField pw = new PasswordField();
+        pw.setPromptText("Password");
+        g.addRow(0, new Label("Username:"), user);
+        g.addRow(1, new Label("Password:"), pw);
+        dlg.getDialogPane().setContent(g);
+
+        dlg.setResultConverter(btn -> {
+            if (btn == ok) return new Pair<>(user.getText(), pw.getText());
+            return null;
+        });
+
+        dlg.showAndWait().ifPresent(creds -> {
+            String u = creds.getKey(), p = creds.getValue();
+            try {
+                if (AuthenticationService.login(u, p)) {
+                    User maybe = UserDAO.getUserByUsername(u);
+                    if (maybe != null && maybe.isAdmin()) {
+                        currentUser = maybe;
+                        primaryStage.setScene(buildAdminScene());
+                    } else {
+                        showAlert("Denied", "Not an admin user.");
+                    }
+                } else {
+                    showAlert("Login failed", "Invalid credentials.");
+                }
+            } catch (SQLException ex) {
+                showAlert("Error", ex.getMessage());
+            }
+        });
+    }
+
+    private Scene buildAdminScene() {
+        // ─── root container ───────────
+        VBox main = new VBox();
+        main.setStyle("-fx-background-color:#f0f5ff;");
+
+        // ─── app header (shield + title) ───────────
+        main.getChildren().add(createHeader());
+
+
+        // ─── content area ────────────────────────────
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        main.getChildren().add(content);
+
+        // ─── admin console card ──────────────────────
+        VBox adminCard = card("⚙️ Admin Console", "");
+        adminCard.setMaxWidth(800);
+
+        // ─── four big action buttons ─────────────────
+        Button btnUsers = new Button("List All Users");
+        btnUsers.setPrefWidth(Double.MAX_VALUE);
+        btnUsers.getStyleClass().add("primary-button");
+        btnUsers.setOnAction(e -> listAllUsers());
+
+        Button btnAccts = new Button("List All Accounts");
+        btnAccts.setPrefWidth(Double.MAX_VALUE);
+        btnAccts.getStyleClass().add("primary-button");
+        btnAccts.setOnAction(e -> listAllAccounts());
+
+        Button btnTx = new Button("List All Transactions");
+        btnTx.setPrefWidth(Double.MAX_VALUE);
+        btnTx.getStyleClass().add("primary-button");
+        btnTx.setOnAction(e -> listAllTransactions());
+
+        Button btnNewAdmin = new Button("Create New ADMIN");
+        btnNewAdmin.setPrefWidth(Double.MAX_VALUE);
+        btnNewAdmin.getStyleClass().add("primary-button");
+        btnNewAdmin.setOnAction(e -> createAdminDialog());
+
+        adminCard.getChildren().addAll(btnUsers, btnAccts, btnTx, btnNewAdmin);
+        content.getChildren().add(adminCard);
+
+        return style(main);
+    }
+
 
     private Scene buildLoginScene() {
-        VBox root = scaffoldRoot();
-        addTabBar(root, true);
+        VBox main = new VBox(40);                     // plenty of vertical breathing-room
+        main.setAlignment(Pos.TOP_CENTER);
+        main.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, "
+                + "#1a237e 0%, #3949ab 50%, #5c6bc0 100%);");
 
-        TextField u = labelled(root, "Username", "Enter your username");
-        PasswordField p = (PasswordField) labelled(root, "Password", "Enter your password", true);
-        primaryButton("Log In", root).setOnAction(e -> handleLogin(u.getText(), p.getText()));
+        main.setPadding(new Insets(20));
+        VBox head = header();                         // blue banner with shield/logo
+        head.setMaxWidth(600);
+        VBox.setMargin(head, new Insets(10, 0, 0, 0));
+        main.getChildren().add(head);
 
-        return style(root);
+        HBox tabs = buildTabBar(Tab.LOGIN);           // Log In / Create / Admin
+        tabs.setMaxWidth(400);
+        main.getChildren().add(tabs);
+
+        main.getChildren().add(buildLoginForm());     // white card (400 px wide)
+        main.getChildren().add(footer());             // copyright tagline
+
+        Scene scene = new Scene(main, 1200, 900);     // start at a sensible size
+        scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
+        return scene;
     }
-
     private Scene buildCreateScene() {
-        VBox root = scaffoldRoot();
-        addTabBar(root, false);
+        VBox main = new VBox(40);
+        main.setAlignment(Pos.TOP_CENTER);
+        main.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, "
+                + "#1a237e 0%, #3949ab 50%, #5c6bc0 100%);");
+        main.setPadding(new Insets(20));
 
-        TextField fn = labelled(root, "First Name", "Enter your first name");
-        TextField ln = labelled(root, "Last Name", "Enter your last name");
-        TextField un = labelled(root, "Username", "Choose a username");
-        PasswordField pw = (PasswordField) labelled(root, "Password", "Choose a password", true);
-        PasswordField cf = (PasswordField) labelled(root, "Confirm Password", "Re-enter password", true);
-        primaryButton("Create Account", root)
-                .setOnAction(e -> handleRegistration(fn.getText(), ln.getText(), un.getText(), pw.getText(), cf.getText()));
+        VBox head = header();
+        head.setMaxWidth(600);
+        VBox.setMargin(head, new Insets(10, 0, 0, 0));
+        main.getChildren().add(head);
 
-        return style(root);
+        HBox tabs = buildTabBar(Tab.CREATE);
+        tabs.setMaxWidth(400);
+        main.getChildren().add(tabs);
+
+        main.getChildren().add(buildCreateForm());
+        main.getChildren().add(footer());
+
+        Scene scene = new Scene(main, 1200, 900);
+        scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
+        return scene;
     }
+
 
     private Scene buildDashboardScene() {
         VBox main = new VBox();
@@ -91,13 +286,11 @@ public class SecureBankApp extends Application {
         content.setPadding(new Insets(30));
         main.getChildren().add(content);
 
-        // Welcome card
         content.getChildren().add(card(
                 "Welcome back, " + currentUser.getFirstName() + " " + currentUser.getLastName(),
                 "Here's your account summary"
         ));
 
-        // Fetch accounts
         List<Account> accounts;
         double total;
         try {
@@ -108,24 +301,140 @@ public class SecureBankApp extends Application {
             return style(main);
         }
 
-        // Accounts summary card
         content.getChildren().add(buildAccountsBox(accounts, total));
 
-        // Action buttons
         HBox actions = new HBox(20);
         actions.setMaxWidth(800);
-        actions.getChildren().add(actionBox("↓", "Deposit",  "Add funds",   () -> depositFlow(accounts)));
-        actions.getChildren().add(actionBox("↑", "Withdraw", "Withdraw",   () -> withdrawFlow(accounts)));
+        actions.getChildren().add(actionBox("↓", "Deposit", "Add funds", () -> depositFlow(accounts)));
+        actions.getChildren().add(actionBox("↑", "Withdraw", "Withdraw funds", () -> withdrawFlow(accounts)));
         actions.getChildren().add(actionBox("⇄", "Transfer", "Move money", () -> transferFlow(accounts)));
         actions.getChildren().add(actionBox("✈", "Send Money", "To another user", this::sendMoneyFlow));
-
         content.getChildren().add(actions);
 
-        // Recent transactions
-        content.getChildren().add(buildRecentBox(accounts));
+        HBox filterBox = new HBox(10);
+        filterBox.setAlignment(Pos.CENTER_LEFT);
+
+        Label filterLabel = new Label("Filter transactions by:");
+        filterLabel.setStyle("-fx-font-size:14px;-fx-text-fill:#666666;");
+
+        ComboBox<String> typeFilter = new ComboBox<>(
+                FXCollections.observableArrayList("ALL", "CHECKING", "SAVING")
+        );
+        typeFilter.setValue("ALL");
+        typeFilter.getStyleClass().add("text-field");
+
+        filterBox.getChildren().addAll(filterLabel, typeFilter);
+        content.getChildren().add(filterBox);
+
+        final ScrollPane[] recentScroll = {makeRecentScroll(
+                accounts.stream()
+                        .filter(a -> {
+                            String f = typeFilter.getValue();
+                            return f.equals("ALL") || a.getACCOUNT_TYPE().equals(f);
+                        })
+                        .collect(Collectors.toList())
+        )};
+        content.getChildren().add(recentScroll[0]);
+
+        typeFilter.setOnAction(e -> {
+            List<Account> filtered = accounts.stream()
+                    .filter(a -> {
+                        String f = typeFilter.getValue();
+                        return f.equals("ALL") || a.getACCOUNT_TYPE().equals(f);
+                    })
+                    .collect(Collectors.toList());
+            ScrollPane updated = makeRecentScroll(filtered);
+            int idx = content.getChildren().indexOf(recentScroll[0]);
+            content.getChildren().set(idx, updated);
+            recentScroll[0] = updated;
+        });
 
         return style(main);
     }
+    /* ─── builds the login form card ───────────────────────────── */
+    private VBox buildLoginForm() {
+        VBox form = new VBox(15);
+        form.setPadding(new Insets(30));
+        form.setAlignment(Pos.CENTER);
+        form.setMaxWidth(400);
+        form.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.95);"
+                        + "-fx-background-radius: 8px;"
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
+
+        TextField user = new TextField();
+        user.setPromptText("Username");
+        user.getStyleClass().add("text-field");
+
+        PasswordField pass = new PasswordField();
+        pass.setPromptText("Password");
+        pass.getStyleClass().add("text-field");
+
+        Button login = new Button("Log In");
+        login.setPrefWidth(Double.MAX_VALUE);
+        login.getStyleClass().add("primary-button");
+        login.setOnAction(e -> handleLogin(user.getText(), pass.getText()));
+
+        form.getChildren().addAll(
+                new Label("Username"), user,
+                new Label("Password"), pass,
+                login
+        );
+        return form;
+    }
+
+    /* ─── builds the create-account form card ──────────────────── */
+    private VBox buildCreateForm() {
+        VBox form = new VBox(15);
+        form.setAlignment(Pos.CENTER);
+        form.setMaxWidth(400);
+        form.setPadding(new Insets(30));
+        form.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.95);"
+                        + "-fx-background-radius: 8px;"
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
+
+        TextField fn = new TextField();
+        fn.setPromptText("First Name");
+        fn.getStyleClass().add("text-field");
+
+        TextField ln = new TextField();
+        ln.setPromptText("Last Name");
+        ln.getStyleClass().add("text-field");
+
+        TextField un = new TextField();
+        un.setPromptText("Username");
+        un.getStyleClass().add("text-field");
+
+        PasswordField pw = new PasswordField();
+        pw.setPromptText("Password");
+        pw.getStyleClass().add("text-field");
+
+        PasswordField cf = new PasswordField();
+        cf.setPromptText("Confirm Password");
+        cf.getStyleClass().add("text-field");
+
+        Button create = new Button("Create Account");
+        create.setPrefWidth(Double.MAX_VALUE);
+        create.getStyleClass().add("primary-button");
+        create.setOnAction(e ->
+                handleRegistration(
+                        fn.getText(), ln.getText(), un.getText(),
+                        pw.getText(), cf.getText()
+                )
+        );
+
+        form.getChildren().addAll(
+                new Label("First Name"), fn,
+                new Label("Last Name"), ln,
+                new Label("Username"), un,
+                new Label("Password"), pw,
+                new Label("Confirm Password"), cf,
+                create
+        );
+        return form;
+    }
+
 
     /* ───────── flows ───────── */
 
@@ -162,7 +471,7 @@ public class SecureBankApp extends Application {
                 }
                 txDao.logTransaction(c, from.getACCOUNT_NUMBER(), "TRANSFER", amt,
                         "To acct " + to.getACCOUNT_NUMBER(), "COMPLETED");
-                txDao.logTransaction(c, to.getACCOUNT_NUMBER(),   "TRANSFER", amt,
+                txDao.logTransaction(c, to.getACCOUNT_NUMBER(), "TRANSFER", amt,
                         "From acct " + from.getACCOUNT_NUMBER(), "COMPLETED");
                 c.commit();
                 showDashboard();
@@ -242,11 +551,191 @@ public class SecureBankApp extends Application {
 
     /* ─────── helpers ─────── */
 
+    private ScrollPane makeRecentScroll(List<Account> accts) {
+        VBox rec = buildRecentBox(accts);
+        ScrollPane sp = new ScrollPane(rec);
+        sp.setFitToWidth(true);
+        sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        sp.setPrefViewportHeight(200);
+        sp.setMaxHeight(200);
+        return sp;
+    }
+
+
+    /**
+     * Renders the blue shield banner at the very top.
+     */
+    private VBox createHeader() {
+        VBox header = new VBox(10);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(30, 20, 20, 20));
+        header.setStyle("-fx-background-color: #3366ff;");
+
+        // Shield svg icon
+        SVGPath shieldIcon = new SVGPath();
+        shieldIcon.setContent("M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z");
+        shieldIcon.setFill(Color.WHITE);
+        shieldIcon.setScaleX(2);
+        shieldIcon.setScaleY(2);
+
+        StackPane iconPane = new StackPane(shieldIcon);
+        iconPane.setPrefHeight(60);
+
+        Label titleLabel = new Label("SecureBank");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+
+        Label subtitleLabel = new Label("Your trusted financial partner");
+        subtitleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+        header.getChildren().addAll(iconPane, titleLabel, subtitleLabel);
+        return header;
+    }
+
+    private void showTextDialog(String title, String text) {
+        TextArea area = new TextArea(text);
+        area.setEditable(false);
+        area.setWrapText(true);
+        area.setPrefWidth(600);
+        area.setPrefHeight(300);
+
+        Dialog<Void> d = new Dialog<>();
+        d.setTitle(title);
+        d.getDialogPane().setContent(area);
+        d.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        d.showAndWait();
+    }
+
+
+    private void listAllUsers() {
+        StringBuilder sb = new StringBuilder();
+        try (Connection c = DatabaseConnection.getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT ID, first_name, last_name, username, role FROM users")) {
+            while (rs.next()) {
+                sb.append(rs.getInt("ID")).append(": ")
+                        .append(rs.getString("first_name")).append(" ")
+                        .append(rs.getString("last_name"))
+                        .append(" (").append(rs.getString("username"))
+                        .append(", role=").append(rs.getString("role")).append(")\n");
+            }
+        } catch (SQLException ex) {
+            showAlert("Error", ex.getMessage());
+            return;
+        }
+        showTextDialog("All Users", sb.toString());
+    }
+
+    private void listAllAccounts() {
+        StringBuilder sb = new StringBuilder();
+        try (Connection c = DatabaseConnection.getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT account_id, user_id, account_type, balance, interest_rate FROM account")) {
+            while (rs.next()) {
+                sb.append("Acct ").append(rs.getInt("account_id"))
+                        .append(" | User ").append(rs.getInt("user_id"))
+                        .append(" | ").append(rs.getString("account_type"))
+                        .append(" | $").append(String.format("%,.2f", rs.getDouble("balance")))
+                        .append(" | rate=")
+                        .append(rs.getObject("interest_rate") == null ? "n/a"
+                                : String.format("%.2f%%", rs.getDouble("interest_rate") * 100))
+                        .append("\n");
+            }
+        } catch (SQLException ex) {
+            showAlert("Error", ex.getMessage());
+            return;
+        }
+        showTextDialog("All Accounts", sb.toString());
+    }
+
+    private void listAllTransactions() {
+        StringBuilder sb = new StringBuilder();
+        try (Connection c = DatabaseConnection.getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT transaction_id, account_id, transaction_type, amount, time_stamp, description, status "
+                             + "FROM transactions ORDER BY time_stamp DESC")) {
+            while (rs.next()) {
+                sb.append(rs.getInt("transaction_id"))
+                        .append(" | acct ").append(rs.getInt("account_id"))
+                        .append(" | ").append(rs.getString("transaction_type"))
+                        .append(" | $").append(String.format("%,.2f", rs.getDouble("amount")))
+                        .append(" | ").append(rs.getTimestamp("time_stamp"))
+                        .append(" | ").append(rs.getString("description"))
+                        .append(" | ").append(rs.getString("status"))
+                        .append("\n");
+            }
+        } catch (SQLException ex) {
+            showAlert("Error", ex.getMessage());
+            return;
+        }
+        showTextDialog("All Transactions", sb.toString());
+    }
+
+    private void createAdminDialog() {
+        Dialog<List<String>> dlg = new Dialog<>();
+        dlg.setTitle("Create New ADMIN");
+        dlg.setHeaderText("Enter admin details");
+
+        ButtonType ok = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
+
+        GridPane g = new GridPane();
+        g.setHgap(10);
+        g.setVgap(10);
+        g.setPadding(new Insets(20));
+        TextField fn = new TextField();
+        fn.setPromptText("First Name");
+        TextField ln = new TextField();
+        ln.setPromptText("Last Name");
+        TextField un = new TextField();
+        un.setPromptText("Username");
+        PasswordField pw = new PasswordField();
+        pw.setPromptText("Password");
+        g.addRow(0, new Label("First Name:"), fn);
+        g.addRow(1, new Label("Last Name:"), ln);
+        g.addRow(2, new Label("Username:"), un);
+        g.addRow(3, new Label("Password:"), pw);
+        dlg.getDialogPane().setContent(g);
+
+        dlg.setResultConverter(btn -> btn == ok
+                ? List.of(fn.getText(), ln.getText(), un.getText(), pw.getText())
+                : null
+        );
+
+        dlg.showAndWait().ifPresent(vals -> {
+            try {
+                String sql = "INSERT INTO users (first_name,last_name,username,password_hash,role) "
+                        + "VALUES (?,?,?,?, 'ADMIN')";
+                String hash = AuthenticationService.encryptPassword(vals.get(3));
+                try (Connection c = DatabaseConnection.getConnection();
+                     PreparedStatement ps = c.prepareStatement(sql)) {
+                    ps.setString(1, vals.get(0));
+                    ps.setString(2, vals.get(1));
+                    ps.setString(3, vals.get(2));
+                    ps.setString(4, hash);
+                    int r = ps.executeUpdate();
+                    showAlert("Result", r == 1 ? "Admin created." : "Create failed.");
+                }
+            } catch (Exception ex) {
+                showAlert("Error", ex.getMessage());
+            }
+        });
+    }
+
+
     private void handleLogin(String u, String p) {
         try {
             if (AuthenticationService.login(u, p)) {
                 currentUser = UserDAO.getUserByUsername(u);
-                showDashboard();
+                if (currentUser.isAdmin()) {
+                    // build and show the admin UI
+                    primaryStage.setScene(buildAdminScene());
+                } else {
+                    showDashboard();
+                }
             } else {
                 showAlert("Login failed", "Incorrect credentials");
             }
@@ -254,6 +743,7 @@ public class SecureBankApp extends Application {
             showAlert("Error", ex.getMessage());
         }
     }
+
 
     private void handleRegistration(String fn, String ln, String un, String pw, String cf) {
         if (fn.isBlank() || ln.isBlank() || un.isBlank() || pw.isBlank()) {
@@ -287,7 +777,7 @@ public class SecureBankApp extends Application {
         r.getChildren().add(header());
         r.getChildren().add(new HBox());
         VBox form = new VBox(15);
-        form.setPadding(new Insets(20,30,30,30));
+        form.setPadding(new Insets(20, 30, 30, 30));
         form.setMaxWidth(400);
         form.setStyle("-fx-background-color:white;-fx-background-radius:8px;");
         r.getChildren().add(form);
@@ -295,24 +785,37 @@ public class SecureBankApp extends Application {
         return r;
     }
 
-    private void addTabBar(VBox r, boolean loginActive) {
-        HBox bar = (HBox)r.getChildren().get(1);
-        bar.setPrefWidth(400);
-        Button b1 = new Button("Log In");
-        Button b2 = new Button("Create Account");
-        b1.setPrefWidth(200); b2.setPrefWidth(200);
-        b1.getStyleClass().add("tab-button"); b2.getStyleClass().add("tab-button");
-        if (loginActive) b1.getStyleClass().add("active-tab"); else b2.getStyleClass().add("active-tab");
-        b1.setOnAction(e -> primaryStage.setScene(loginScene));
-        b2.setOnAction(e -> primaryStage.setScene(createScene));
-        bar.getChildren().addAll(b1,b2);
+    private void addTabBar(VBox root, boolean isLoginTab, boolean isAdminTab) {
+        HBox bar = (HBox) root.getChildren().get(1);
+        bar.getChildren().clear();
+        bar.setPrefWidth(600);
+
+        Button userTab = new Button("Log In");
+        Button regTab = new Button("Create Account");
+        Button admTab = new Button("Admin");
+
+        for (Button b : List.of(userTab, regTab, admTab)) {
+            b.setPrefWidth(200);
+            b.getStyleClass().add("tab-button");
+        }
+        if (isLoginTab) userTab.getStyleClass().add("active-tab");
+        else if (isAdminTab) admTab.getStyleClass().add("active-tab");
+        else regTab.getStyleClass().add("active-tab");
+
+        userTab.setOnAction(e -> primaryStage.setScene(loginScene));
+        regTab.setOnAction(e -> primaryStage.setScene(createScene));
+        admTab.setOnAction(e -> primaryStage.setScene(adminAuthScene));
+
+        bar.getChildren().addAll(userTab, regTab, admTab);
     }
+
 
     private TextField labelled(VBox root, String label, String prompt) {
         return labelled(root, label, prompt, false);
     }
+
     private TextField labelled(VBox root, String label, String prompt, boolean pw) {
-        VBox form = (VBox)root.getChildren().get(2);
+        VBox form = (VBox) root.getChildren().get(2);
         form.getChildren().add(new Label(label));
         TextField f = pw ? new PasswordField() : new TextField();
         f.setPromptText(prompt);
@@ -322,7 +825,7 @@ public class SecureBankApp extends Application {
     }
 
     private Button primaryButton(String txt, VBox root) {
-        VBox form = (VBox)root.getChildren().get(2);
+        VBox form = (VBox) root.getChildren().get(2);
         Button b = new Button(txt);
         b.setPrefWidth(Double.MAX_VALUE);
         b.getStyleClass().add("primary-button");
@@ -333,7 +836,7 @@ public class SecureBankApp extends Application {
     private HBox buildNavBar() {
         HBox nav = new HBox();
         nav.setAlignment(Pos.CENTER_LEFT);
-        nav.setPadding(new Insets(0,20,0,20));
+        nav.setPadding(new Insets(0, 20, 0, 20));
         nav.setPrefHeight(60);
         nav.setStyle("-fx-background-color:#3366ff;");
 
@@ -343,28 +846,36 @@ public class SecureBankApp extends Application {
         Region sp = new Region();
         HBox.setHgrow(sp, Priority.ALWAYS);
 
-           // ────── OPTIONS MENU ──────
-                MenuButton opts = new MenuButton("Options");
-           opts.getItems().addAll(
-                      new MenuItem("Open Savings")    {{ setOnAction(e -> {
-                          try {
-                              openSavingsFlow();
-                          } catch (SQLException ex) {
-                              throw new RuntimeException(ex);
-                          }
-                      }); }},
-                      new MenuItem("Close Account")   {{ setOnAction(e -> closeAccountFlow()); }},
-                      new MenuItem("Change Password") {{ setOnAction(e -> changePasswordFlow()); }},
-                      new MenuItem("Open Checking")   {{ setOnAction(e -> openCheckingFlow()); }}
-                            );
+        // ────── OPTIONS MENU ──────
+        MenuButton opts = new MenuButton("Options");
+        opts.getItems().addAll(
+                new MenuItem("Open Savings") {{
+                    setOnAction(e -> {
+                        try {
+                            openSavingsFlow();
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                }},
+                new MenuItem("Close Account") {{
+                    setOnAction(e -> closeAccountFlow());
+                }},
+                new MenuItem("Change Password") {{
+                    setOnAction(e -> changePasswordFlow());
+                }},
+                new MenuItem("Open Checking") {{
+                    setOnAction(e -> openCheckingFlow());
+                }}
+        );
 
-           // reuse the same styling as logout button
-          opts.getStyleClass().add("logout-button");
+        // reuse the same styling as logout button
+        opts.getStyleClass().add("logout-button");
 
-                Button out = new Button("Logout");
+        Button out = new Button("Logout");
         out.getStyleClass().add("logout-button");
         out.setOnAction(e -> primaryStage.setScene(loginScene));
-         nav.getChildren().addAll(lbl, sp, opts, out);
+        nav.getChildren().addAll(lbl, sp, opts, out);
 
         return nav;
     }
@@ -477,7 +988,9 @@ public class SecureBankApp extends Application {
 
     /* ───────── dialogs & selection ───────── */
 
-    private interface AmountHandler { void apply(double amt); }
+    private interface AmountHandler {
+        void apply(double amt);
+    }
 
     private void amountDialog(String title, AmountHandler handler) {
         Dialog<Double> d = new Dialog<>();
@@ -487,7 +1000,7 @@ public class SecureBankApp extends Application {
         d.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
 
         GridPane g = new GridPane();
-        g.setPadding(new Insets(20,150,10,10));
+        g.setPadding(new Insets(20, 150, 10, 10));
         g.setHgap(10);
         g.setVgap(10);
         TextField amt = new TextField();
@@ -498,8 +1011,11 @@ public class SecureBankApp extends Application {
 
         d.setResultConverter(btn -> {
             if (btn == ok) {
-                try { return Double.parseDouble(amt.getText()); }
-                catch (NumberFormatException e) { return 0.0; }
+                try {
+                    return Double.parseDouble(amt.getText());
+                } catch (NumberFormatException e) {
+                    return 0.0;
+                }
             }
             return null;
         });
@@ -551,7 +1067,7 @@ public class SecureBankApp extends Application {
     private VBox header() {
         VBox h = new VBox(10);
         h.setAlignment(Pos.CENTER);
-        h.setPadding(new Insets(30,20,20,20));
+        h.setPadding(new Insets(30, 20, 20, 20));
         h.setStyle("-fx-background-color:#3366ff;");
         SVGPath shield = new SVGPath();
         shield.setContent("M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z");
@@ -661,7 +1177,7 @@ public class SecureBankApp extends Application {
         oldPf.setPromptText("Current password");
         PasswordField newPf = new PasswordField();
         newPf.setPromptText("New password");
-        PasswordField confPf= new PasswordField();
+        PasswordField confPf = new PasswordField();
         confPf.setPromptText("Confirm new pw");
 
         grid.addRow(0, new Label("Current:"), oldPf);
@@ -737,6 +1253,4 @@ public class SecureBankApp extends Application {
             }
         });
     }
-
-
 }
