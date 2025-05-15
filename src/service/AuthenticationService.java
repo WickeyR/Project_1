@@ -3,21 +3,13 @@ package service;
 import DAO.UserDAO;
 import model.User;
 import util.DatabaseConnection;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-//Author: Ricky Franco
-//01 April 2025
-//service.AuthenticationService.java: Connects with SQL database to confirm user information
+
 public class AuthenticationService {
 
 

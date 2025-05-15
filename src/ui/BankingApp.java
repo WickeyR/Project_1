@@ -15,9 +15,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import util.DatabaseConnection;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class BankingApp extends Application {

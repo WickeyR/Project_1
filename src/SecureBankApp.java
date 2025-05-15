@@ -48,6 +48,8 @@ public class SecureBankApp extends Application {
 
     @Override
     public void start(Stage stage) {
+
+        // call methods to load scenes and build application
         this.primaryStage = stage;
         loginScene = buildLoginScene();
         createScene = buildCreateScene();
@@ -64,11 +66,17 @@ public class SecureBankApp extends Application {
     /* ─────────── scenes ─────────── */
     private enum Tab { LOGIN, CREATE, ADMIN }
 
+    /***
+     * Builds the tab bar for login options
+     * @param active The current tab active
+     * @return A tab bar for each button
+     */
     private HBox buildTabBar(Tab active) {
         HBox bar = new HBox();
         bar.setAlignment(Pos.CENTER);
         bar.setPrefWidth(600);
 
+        //Add button options for login-types
         Button login = new Button("Log In");
         Button create = new Button("Create Account");
         Button admin  = new Button("Admin");
@@ -78,11 +86,13 @@ public class SecureBankApp extends Application {
             b.getStyleClass().add("tab-button");
         }
         switch (active) {
+            //Add styles if hovering
             case LOGIN  -> login.getStyleClass().add("active-tab");
             case CREATE -> create.getStyleClass().add("active-tab");
             case ADMIN  -> admin.getStyleClass().add("active-tab");
         }
 
+        //When pressed load appropriate scene
         login.setOnAction(e -> primaryStage.setScene(loginScene));
         create.setOnAction(e -> primaryStage.setScene(createScene));
         admin.setOnAction(e -> primaryStage.setScene(adminAuthScene));
@@ -91,6 +101,10 @@ public class SecureBankApp extends Application {
         return bar;
     }
 
+    /**
+     * Build the administration auth screen for the user
+     * @return the complete scene
+     */
     private Scene buildAdminAuthScene() {
         VBox main = new VBox(40);
         main.setAlignment(Pos.TOP_CENTER);
@@ -115,6 +129,7 @@ public class SecureBankApp extends Application {
                         + "-fx-background-radius: 8px;"
                         + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
 
+        //Show the buttons for login or create account
         Button adminLogin = new Button("Admin Log In");
         adminLogin.setPrefWidth(Double.MAX_VALUE);
         adminLogin.getStyleClass().add("primary-button");
@@ -125,6 +140,7 @@ public class SecureBankApp extends Application {
         createAdmin.getStyleClass().add("primary-button");
         createAdmin.setOnAction(e -> createAdminDialog());
 
+        //Add to card
         card.getChildren().addAll(adminLogin, createAdmin);
         card.setPadding(new Insets(0));
         VBox.setMargin(card, new Insets(0));
@@ -137,6 +153,10 @@ public class SecureBankApp extends Application {
                 Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
         return scene;
     }
+
+    /**
+     * show the administration login form to the user
+     */
     private void adminLoginFlow() {
         Dialog<Pair<String, String>> dlg = new Dialog<>();
         dlg.setTitle("Admin Log In");
@@ -149,6 +169,8 @@ public class SecureBankApp extends Application {
         g.setVgap(10);
         g.setPadding(new Insets(20));
         TextField user = new TextField();
+
+        //Grab the needed information from the users field
         user.setPromptText("Username");
         PasswordField pw = new PasswordField();
         pw.setPromptText("Password");
@@ -181,25 +203,26 @@ public class SecureBankApp extends Application {
         });
     }
 
+    /**
+     * Build the administration main console
+     * @return the console
+     */
     private Scene buildAdminScene() {
-        // ─── root container ───────────
         VBox main = new VBox();
         main.setStyle("-fx-background-color:#f0f5ff;");
 
-        // ─── app header (shield + title) ───────────
         main.getChildren().add(createHeader());
 
 
-        // ─── content area ────────────────────────────
         VBox content = new VBox(20);
         content.setPadding(new Insets(30));
         main.getChildren().add(content);
 
-        // ─── admin console card ──────────────────────
+        //Add a unique card to the admin console
         VBox adminCard = card("⚙️ Admin Console", "");
         adminCard.setMaxWidth(800);
 
-        // ─── four big action buttons ─────────────────
+        //provide buttons to view admin options
         Button btnUsers = new Button("List All Users");
         btnUsers.setPrefWidth(Double.MAX_VALUE);
         btnUsers.getStyleClass().add("primary-button");
@@ -220,6 +243,7 @@ public class SecureBankApp extends Application {
         btnNewAdmin.getStyleClass().add("primary-button");
         btnNewAdmin.setOnAction(e -> createAdminDialog());
 
+        //Add all of the buttons to the card
         adminCard.getChildren().addAll(btnUsers, btnAccts, btnTx, btnNewAdmin);
         content.getChildren().add(adminCard);
 
@@ -227,32 +251,46 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     * Build the login screen
+     * @return the login screen
+     */
     private Scene buildLoginScene() {
-        VBox main = new VBox(40);                     // plenty of vertical breathing-room
+        VBox main = new VBox(40);
+
+        //Set styling
         main.setAlignment(Pos.TOP_CENTER);
         main.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, "
                 + "#1a237e 0%, #3949ab 50%, #5c6bc0 100%);");
 
         main.setPadding(new Insets(20));
-        VBox head = header();                         // blue banner with shield/logo
+        VBox head = header();
         head.setMaxWidth(600);
         VBox.setMargin(head, new Insets(10, 0, 0, 0));
         main.getChildren().add(head);
 
-        HBox tabs = buildTabBar(Tab.LOGIN);           // Log In / Create / Admin
+        // Log In / Create / Admin
+        HBox tabs = buildTabBar(Tab.LOGIN);
         tabs.setMaxWidth(400);
         main.getChildren().add(tabs);
 
-        main.getChildren().add(buildLoginForm());     // white card (400 px wide)
-        main.getChildren().add(footer());             // copyright tagline
+        main.getChildren().add(buildLoginForm());
+        main.getChildren().add(footer());
 
-        Scene scene = new Scene(main, 1200, 900);     // start at a sensible size
+        Scene scene = new Scene(main, 1200, 900);
         scene.getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
         return scene;
     }
+
+    /**
+     * build create user screen
+     * @return the create user screen with options
+     */
     private Scene buildCreateScene() {
         VBox main = new VBox(40);
+
+        //set styling
         main.setAlignment(Pos.TOP_CENTER);
         main.setStyle("-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, "
                 + "#1a237e 0%, #3949ab 50%, #5c6bc0 100%);");
@@ -267,6 +305,7 @@ public class SecureBankApp extends Application {
         tabs.setMaxWidth(400);
         main.getChildren().add(tabs);
 
+        //build the form and add it th
         main.getChildren().add(buildCreateForm());
         main.getChildren().add(footer());
 
@@ -277,6 +316,10 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     * Build the dashboard after loggin in
+     * @return the completed scene
+     */
     private Scene buildDashboardScene() {
         VBox main = new VBox();
         main.setStyle("-fx-background-color:#f0f5ff;");
@@ -286,11 +329,13 @@ public class SecureBankApp extends Application {
         content.setPadding(new Insets(30));
         main.getChildren().add(content);
 
+        // Add a card displaying user information
         content.getChildren().add(card(
                 "Welcome back, " + currentUser.getFirstName() + " " + currentUser.getLastName(),
                 "Here's your account summary"
         ));
 
+        //Show all of the accounts of the user
         List<Account> accounts;
         double total;
         try {
@@ -303,6 +348,7 @@ public class SecureBankApp extends Application {
 
         content.getChildren().add(buildAccountsBox(accounts, total));
 
+        //Add different buttons to use the account functions
         HBox actions = new HBox(20);
         actions.setMaxWidth(800);
         actions.getChildren().add(actionBox("↓", "Deposit", "Add funds", () -> depositFlow(accounts)));
@@ -351,7 +397,11 @@ public class SecureBankApp extends Application {
 
         return style(main);
     }
-    /* ─── builds the login form card ───────────────────────────── */
+
+    /**
+     * Build the login card with information retrieval
+     * @return the completed card
+     */
     private VBox buildLoginForm() {
         VBox form = new VBox(15);
         form.setPadding(new Insets(30));
@@ -362,6 +412,7 @@ public class SecureBankApp extends Application {
                         + "-fx-background-radius: 8px;"
                         + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
 
+        //Create text-fields to extract user login credentials
         TextField user = new TextField();
         user.setPromptText("Username");
         user.getStyleClass().add("text-field");
@@ -383,7 +434,10 @@ public class SecureBankApp extends Application {
         return form;
     }
 
-    /* ─── builds the create-account form card ──────────────────── */
+    /**
+     * Build the create user form to create a new user
+     * @return the completed form
+     */
     private VBox buildCreateForm() {
         VBox form = new VBox(15);
         form.setAlignment(Pos.CENTER);
@@ -394,6 +448,7 @@ public class SecureBankApp extends Application {
                         + "-fx-background-radius: 8px;"
                         + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);");
 
+        //Add text fields for create user
         TextField fn = new TextField();
         fn.setPromptText("First Name");
         fn.getStyleClass().add("text-field");
@@ -424,6 +479,7 @@ public class SecureBankApp extends Application {
                 )
         );
 
+        //Add all of the text-fields
         form.getChildren().addAll(
                 new Label("First Name"), fn,
                 new Label("Last Name"), ln,
@@ -438,18 +494,30 @@ public class SecureBankApp extends Application {
 
     /* ───────── flows ───────── */
 
+    /**
+     * Deposit flow for the user
+     * @param accts the accounts to potentially deposit
+     */
     private void depositFlow(List<Account> accts) {
         Account tgt = chooseAccount(accts, "Deposit to account");
         if (tgt == null) return;
         amountDialog("Deposit", amt -> txWrapper(tgt, amt, true, "GUI deposit"));
     }
 
+    /**
+     * withdraw flow for the user
+     * @param accts accounts to potential take from
+     */
     private void withdrawFlow(List<Account> accts) {
         Account src = chooseAccount(accts, "Withdraw from account");
         if (src == null) return;
         amountDialog("Withdraw", amt -> txWrapper(src, amt, false, "GUI withdraw"));
     }
 
+    /**
+     * transfer flow for the user
+     * @param accts accounts to transfer from
+     */
     private void transferFlow(List<Account> accts) {
         Account from = chooseAccount(accts, "Transfer FROM account");
         if (from == null) return;
@@ -486,7 +554,8 @@ public class SecureBankApp extends Application {
      * and refresh the dashboard.
      */
     private void sendMoneyFlow() {
-        // 1) ask for recipient username
+
+        //Ask for username
         TextInputDialog userDlg = new TextInputDialog();
         userDlg.setTitle("Send Money");
         userDlg.setHeaderText("Enter recipient’s username");
@@ -497,14 +566,14 @@ public class SecureBankApp extends Application {
                 return;
             }
 
-            // 2) ask for amount
+            // ask for ammount
             amountDialog("Send Money", amt -> {
                 if (amt <= 0) {
                     showAlert("Invalid", "Amount must be positive.");
                     return;
                 }
 
-                // 3) perform transfer
+                //perform transfer
                 try {
                     boolean ok = acctSvc.transfer(
                             currentUser.getUsername(),
@@ -528,6 +597,13 @@ public class SecureBankApp extends Application {
 
     /* ───── transaction helper ───── */
 
+    /**
+     * transaction wrapper account for recent transactions
+     * @param acct the account to log
+     * @param amt the amount to log
+     * @param deposit type of transaction
+     * @param desc short description
+     */
     private void txWrapper(Account acct, double amt, boolean deposit, String desc) {
         try (Connection c = DatabaseConnection.getConnection()) {
             c.setAutoCommit(false);
@@ -551,6 +627,11 @@ public class SecureBankApp extends Application {
 
     /* ─────── helpers ─────── */
 
+    /**
+     * Allow users to scroll up or down
+     * @param accts the recent transactions of all the accounts
+     * @return thhe completed scroll pane
+     */
     private ScrollPane makeRecentScroll(List<Account> accts) {
         VBox rec = buildRecentBox(accts);
         ScrollPane sp = new ScrollPane(rec);
@@ -592,6 +673,11 @@ public class SecureBankApp extends Application {
         return header;
     }
 
+    /**
+     * Text dialog helper
+     * @param title the title of the button
+     * @param text the text of the button
+     */
     private void showTextDialog(String title, String text) {
         TextArea area = new TextArea(text);
         area.setEditable(false);
@@ -607,6 +693,9 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     * List all the users for the administration page
+     */
     private void listAllUsers() {
         StringBuilder sb = new StringBuilder();
         try (Connection c = DatabaseConnection.getConnection();
@@ -627,6 +716,9 @@ public class SecureBankApp extends Application {
         showTextDialog("All Users", sb.toString());
     }
 
+    /**
+     * List all of the accounts for the administrator
+     */
     private void listAllAccounts() {
         StringBuilder sb = new StringBuilder();
         try (Connection c = DatabaseConnection.getConnection();
@@ -650,6 +742,9 @@ public class SecureBankApp extends Application {
         showTextDialog("All Accounts", sb.toString());
     }
 
+    /**
+     * List all  the transactions for the user
+     */
     private void listAllTransactions() {
         StringBuilder sb = new StringBuilder();
         try (Connection c = DatabaseConnection.getConnection();
@@ -674,6 +769,9 @@ public class SecureBankApp extends Application {
         showTextDialog("All Transactions", sb.toString());
     }
 
+    /**
+     * Show dialogue to create a new admin   user
+     */
     private void createAdminDialog() {
         Dialog<List<String>> dlg = new Dialog<>();
         dlg.setTitle("Create New ADMIN");
@@ -726,6 +824,11 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     * Handle login with database
+     * @param u the username
+     * @param p the password
+     */
     private void handleLogin(String u, String p) {
         try {
             if (AuthenticationService.login(u, p)) {
@@ -745,6 +848,14 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     * handle user registration
+     * @param fn first name
+     * @param ln last name
+     * @param un username
+     * @param pw password
+     * @param cf confirm password
+     */
     private void handleRegistration(String fn, String ln, String un, String pw, String cf) {
         if (fn.isBlank() || ln.isBlank() || un.isBlank() || pw.isBlank()) {
             showAlert("Missing", "All fields required");
@@ -763,6 +874,9 @@ public class SecureBankApp extends Application {
         }
     }
 
+    /**
+     * show the dashboard to the user
+     */
     private void showDashboard() {
         dashboardScene = buildDashboardScene();
         primaryStage.setScene(dashboardScene);
@@ -770,6 +884,10 @@ public class SecureBankApp extends Application {
 
     /* ───────── UI building blocks ───────── */
 
+    /**
+     * Create a root scaffold for formatting
+     * @return the completed scaffold
+     */
     private VBox scaffoldRoot() {
         VBox r = new VBox(20);
         r.setAlignment(Pos.TOP_CENTER);
@@ -785,6 +903,12 @@ public class SecureBankApp extends Application {
         return r;
     }
 
+    /**
+     * Add the tab bar for the login options
+     * @param root the root box
+     * @param isLoginTab will display different results
+     * @param isAdminTab admin tab
+     */
     private void addTabBar(VBox root, boolean isLoginTab, boolean isAdminTab) {
         HBox bar = (HBox) root.getChildren().get(1);
         bar.getChildren().clear();
@@ -810,10 +934,23 @@ public class SecureBankApp extends Application {
     }
 
 
+    /**
+     *  helper to make labeled text-fields
+     * @param root the root box
+     * @param label the label to place
+     * @param prompt the prompt of the text-field
+     * @return the completed text-field
+     */
     private TextField labelled(VBox root, String label, String prompt) {
         return labelled(root, label, prompt, false);
     }
-
+    /**
+     *  helper to make labeled text-fields
+     * @param root the root box
+     * @param label the label to place
+     * @param prompt the prompt of the text-field
+     * @return the completed text-field
+     */
     private TextField labelled(VBox root, String label, String prompt, boolean pw) {
         VBox form = (VBox) root.getChildren().get(2);
         form.getChildren().add(new Label(label));
@@ -824,6 +961,12 @@ public class SecureBankApp extends Application {
         return f;
     }
 
+    /**
+     * Helper method to create buttons
+     * @param txt the text of the button
+     * @param root the root box to place it in
+     * @return the complete button
+     */
     private Button primaryButton(String txt, VBox root) {
         VBox form = (VBox) root.getChildren().get(2);
         Button b = new Button(txt);
@@ -833,6 +976,10 @@ public class SecureBankApp extends Application {
         return b;
     }
 
+    /**
+     * build a navigation bard
+     * @return the completed navigation bar
+     */
     private HBox buildNavBar() {
         HBox nav = new HBox();
         nav.setAlignment(Pos.CENTER_LEFT);
@@ -880,6 +1027,12 @@ public class SecureBankApp extends Application {
         return nav;
     }
 
+    /**
+     * box that shows to show user accounts
+     * @param accts the type of accounts they have
+     * @param total the total amount in the account
+     * @return the completed box
+     */
     private VBox buildAccountsBox(List<Account> accts, double total) {
         VBox box = new VBox(15);
         box.setPadding(new Insets(30));
@@ -906,6 +1059,11 @@ public class SecureBankApp extends Application {
         return box;
     }
 
+    /**
+     * Loads up the recent transactions
+     * @param accts the accounts to list the recents of
+     * @return the completed recent transactions box
+     */
     private VBox buildRecentBox(List<Account> accts) {
         VBox box = new VBox(10);
         box.setPadding(new Insets(20));
@@ -939,6 +1097,12 @@ public class SecureBankApp extends Application {
         return box;
     }
 
+    /**
+     * Helper for the card
+     * @param title set the title of the card
+     * @param subtitle set the subtitle of the card
+     * @return the completed card
+     */
     private VBox card(String title, String subtitle) {
         VBox v = new VBox(10);
         v.setPadding(new Insets(20));
@@ -952,6 +1116,14 @@ public class SecureBankApp extends Application {
         return v;
     }
 
+    /**
+     * Handles actions
+     * @param icon the icon / logo
+     * @param title the title of the action
+     * @param subtitle the subtitle of the action
+     * @param action the action to handle itself
+     * @return the completed vbox for the action
+     */
     private VBox actionBox(String icon, String title, String subtitle, Runnable action) {
         VBox box = new VBox(10);
         box.setPadding(new Insets(20));
@@ -979,6 +1151,11 @@ public class SecureBankApp extends Application {
         return box;
     }
 
+    /**
+     * A helper to set the styling
+     * @param root the root pane to place styling on
+     * @return the completed style
+     * */
     private Scene style(Pane root) {
         Scene s = new Scene(root, 850, 700);
         s.getStylesheets().add(Objects.requireNonNull(
@@ -988,10 +1165,18 @@ public class SecureBankApp extends Application {
 
     /* ───────── dialogs & selection ───────── */
 
+    /**
+     * Helper to display the amount to display
+     */
     private interface AmountHandler {
         void apply(double amt);
     }
 
+    /**
+     * prompts the user for the amount to either deposit or withdraw
+      * @param title the title for the dialog
+     * @param handler handles the amount
+     */
     private void amountDialog(String title, AmountHandler handler) {
         Dialog<Double> d = new Dialog<>();
         d.setTitle(title);
@@ -1026,6 +1211,12 @@ public class SecureBankApp extends Application {
         });
     }
 
+    /**
+     * allows user to choose the type of account to perform an action on
+     * @param accts allows user to choose accounts
+     * @param header the header
+     * @return return the chose account screen
+     */
     private Account chooseAccount(List<Account> accts, String header) {
         if (accts.isEmpty()) {
             showAlert("No accounts", "You don’t have any accounts yet.");
@@ -1054,6 +1245,11 @@ public class SecureBankApp extends Application {
 
     /* ───────── alert ───────── */
 
+    /**
+     * shows a specific alert
+     * @param t the string of the alert
+     * @param m the content of the alert
+     */
     private void showAlert(String t, String m) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setTitle(t);
@@ -1064,6 +1260,10 @@ public class SecureBankApp extends Application {
 
     /* ───────── header/footer ───────── */
 
+    /**
+     * set the header attributes
+     * @return the header
+     */
     private VBox header() {
         VBox h = new VBox(10);
         h.setAlignment(Pos.CENTER);
@@ -1084,6 +1284,10 @@ public class SecureBankApp extends Application {
         return h;
     }
 
+    /**
+     * set the footer to contain copyright information
+     * @return return the footer
+     */
     private VBox footer() {
         VBox f = new VBox(5);
         f.setAlignment(Pos.CENTER);
@@ -1096,6 +1300,11 @@ public class SecureBankApp extends Application {
     }
 
     // ───── Open Savings GUI ─────
+
+    /**
+     * open dialogue to let user open a savings account
+     * @throws SQLException to handle issues with sql
+     */
     private void openSavingsFlow() throws SQLException {
         // pick a checking account
         List<Account> checkings = acctDao.getAccountsByUser(currentUser.getUserId()).stream()
@@ -1124,6 +1333,10 @@ public class SecureBankApp extends Application {
     }
 
     // ───── Close Account GUI ─────
+
+    /**
+     * Allow the user to close the account
+     */
     private void closeAccountFlow() {
         List<Account> accts;
         try {
@@ -1160,6 +1373,10 @@ public class SecureBankApp extends Application {
     }
 
     // ───── Change Password GUI ─────
+
+    /**
+     * allow the user to change the password
+     */
     private void changePasswordFlow() {
         Dialog<List<String>> dlg = new Dialog<>();
         dlg.setTitle("Change Password");
@@ -1211,6 +1428,10 @@ public class SecureBankApp extends Application {
     }
 
     // ───── Open Checking GUI ─────
+
+    /**
+     * open a new checking account
+     */
     private void openCheckingFlow() {
         TextInputDialog dlg = new TextInputDialog("0");
         dlg.setTitle("Open Checking");
